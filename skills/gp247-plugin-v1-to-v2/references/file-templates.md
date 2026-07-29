@@ -200,6 +200,48 @@ The `class_exists` guard means the plugin still installs normally when `gp247/fr
 
 ---
 
+## Step 8b — LayoutBlock page-type (optional)
+
+Do this only when the plugin has its **own public storefront page** (e.g. a list/detail page) and
+admins should be able to attach LayoutBlock blocks (banner, HTML, view…) to it. The admin "Layout
+block" screen only lists page-types registered into `config('gp247-config.front.layout_page')`.
+
+**1. Controller — emit the page-type token** when rendering the public page:
+
+```php
+return view($view, [
+    // ... other data ...
+    'layout_page' => 'myplugin_index',   // this page's page-type token
+]);
+```
+
+**2. `Provider.php`** — add inside the `if (gp247_extension_check_active(...))` section:
+
+```php
+if (class_exists('GP247\Front\Controllers\RootFrontController')) {
+    $layoutPage = config('gp247-config.front.layout_page', []);
+    // Store the i18n KEY (NOT a pre-rendered string) — the admin renders it in its current locale.
+    $layoutPage['myplugin_index'] = $extensionPath.'::lang.layout_block_page.myplugin_index';
+    config(['gp247-config.front.layout_page' => $layoutPage]);
+}
+```
+
+- The token (`myplugin_index`) **must match** the `$layout_page` value the controller emits, otherwise
+  a block selected for it will never display.
+- The value is a **language key** (pointing to the plugin's `Lang` files), not a pre-translated
+  string — so the admin dropdown renders it in the viewer's current locale.
+- The block is guarded by `class_exists`, so a website without `gp247/front` simply skips it and the
+  plugin still installs normally.
+
+**3. `Lang/en/lang.php` and `Lang/vi/lang.php`** — add the matching line to the `layout_block_page`
+array, e.g. `'myplugin_index' => 'Plugin listing page'`.
+
+Reference: the `News` plugin (`app/GP247/Plugins/News/Provider.php`) registers
+`news_index`/`news_category`/`news_detail` this exact way. Note: a *template*/theme does **not**
+register page-types — it only renders based on the `$layout_page` the controller already emits.
+
+---
+
 ## Step 9 — verify
 
 ```bash
@@ -222,4 +264,7 @@ to confirm `AppConfig.php` still runs.
 | What value for `requireUpdateFrom`? | `"1.0"` is safest. Raise it only when a major release's `update()` hook cannot migrate older lines. |
 | `Seo.php` for every plugin? | No — only when the plugin has a public page contributing URLs to `sitemap.xml`. |
 | Does the `Provider.php` sitemap block error without gp247/front? | No — it is wrapped in `class_exists('GP247\Front\Controllers\RootFrontController')` and simply skipped. |
+| Must I register a LayoutBlock page-type? | Only if the plugin has its own public storefront page that admins should attach LayoutBlock blocks to (step 8b). Admin-only plugins skip it. |
+| I attached a block in admin but it doesn't show on the plugin's page | The registered token must equal the `$layout_page` the controller passes to `view()`; a mismatch means the block never renders (step 8b). |
+| Should a template (theme) register page-types too? | No — only a plugin with its own page registers page-types; a template just renders based on the `$layout_page` the controller emits. |
 | Fastest way to get a fresh v2 plugin instead of editing? | `php artisan gp247:make-plugin --name=YourPluginName --download=0`, then copy the old logic in. |

@@ -1,6 +1,6 @@
 ---
 name: gp247-plugin-v1-to-v2
-description: Upgrades an existing GP247 plugin written for gp247/core 1.x so it runs on gp247/core 2.0, editing the plugin's config, admin view, route, and AppConfig files in place and optionally adding the Livewire/SEO scaffolding. Always use this skill when the user asks to upgrade, convert, migrate, or port a GP247 plugin to v2 / core 2.0 / TailAdmin, or reports that an old plugin breaks on 2.0 (e.g. "View [gp247-core::layout] not found"). Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese (e.g. "nâng cấp plugin lên v2", "chuyển plugin gp247 sang core 2.0", "convert plugin v1 sang v2"), so do not wait for an exact English keyword match. Do not use this skill to scaffold a brand-new v2 plugin from scratch (use `php artisan gp247:make-plugin`) or to upgrade gp247/core, front, or shop themselves.
+description: Upgrades an existing GP247 plugin written for gp247/core 1.x so it runs on gp247/core 2.0, editing the plugin's config, admin view, route, and AppConfig files in place and optionally adding the Livewire, SEO sitemap, and LayoutBlock page-type scaffolding. Always use this skill when the user asks to upgrade, convert, migrate, or port a GP247 plugin to v2 / core 2.0 / TailAdmin, or reports that an old plugin breaks on 2.0 (e.g. "View [gp247-core::layout] not found"). Trigger on Vietnamese, Japanese, or English phrasing of this intent (e.g. "upgrade plugin to v2", "convert plugin gp247 to core 2.0", "migrate plugin v1 to v2") — requests often arrive in Vietnamese or Japanese, so do not wait for an exact English keyword match. Do not use this skill to scaffold a brand-new v2 plugin from scratch (use `php artisan gp247:make-plugin`) or to upgrade gp247/core, front, or shop themselves.
 ---
 
 # gp247-plugin-v1-to-v2 — Upgrade a GP247 plugin from Core 1.x to Core 2.0
@@ -18,10 +18,11 @@ untouched. It replaces the manual, error-prone edits described in
 
 ## Output language
 
-**Code edits: English** — every code comment follows the GP247 English-only rule. **Progress and the
-final summary spoken to the user: Vietnamese** (the team works in Vietnamese). The deliverable is
-modified plugin source files, not a natural-language document — never translate code identifiers,
-blade directives, or `gp247_language_render` keys.
+**English throughout** — code edits, progress updates, and the final summary are all in English, per
+the GP247 English-only rule. The user may write in Vietnamese, Japanese, or English (see the trigger
+note above), but you respond in English. The deliverable is modified plugin source files, not a
+natural-language document — never translate code identifiers, blade directives, or
+`gp247_language_render` keys.
 
 ## When NOT to use
 
@@ -48,8 +49,10 @@ Read `gp247.json` first to capture two identifiers reused across the steps:
 ## Workflow
 
 Do the steps in order. Steps 2, 3, 7 are the **required minimum** for the plugin to run; steps 5–6 are
-recommended (only when the plugin has dynamic/jQuery interaction); step 8 is optional (only when the
-plugin serves public pages). Decide which optional steps apply *before* editing, then tell the user.
+recommended (only when the plugin has dynamic/jQuery interaction); steps 8 and 8b are optional (step 8
+only when the plugin serves public pages for the sitemap; step 8b only when the plugin has its own
+public storefront page that admins should be able to attach LayoutBlock blocks to). Decide which
+optional steps apply *before* editing, then tell the user.
 
 1. **Safety branch.** If the plugin is under Git, create a working branch (`git checkout -b upgrade-to-v2`).
    Otherwise ask the user to back up the folder first. This is the rollback path — do not skip it.
@@ -107,38 +110,55 @@ plugin serves public pages). Decide which optional steps apply *before* editing,
    `Seo.php` and add the `class_exists`-guarded registration block to `Provider.php`. Templates are in
    `references/file-templates.md`.
 
+8b. **(Optional) LayoutBlock page-type.** Only when the plugin has its **own public storefront page**
+   (e.g. a list/detail page) and admins should be able to attach LayoutBlock blocks (banner, HTML,
+   view…) to it. The admin "Layout block" screen only lists page-types **registered** into
+   `config('gp247-config.front.layout_page')`, so the plugin must register its own. Confirm the
+   controller passes `'layout_page' => '<token>'` to `view()`, then add the `class_exists`-guarded
+   registration block to `Provider.php` (storing the **i18n key**, not a pre-rendered string) and add
+   the matching `layout_block_page` line to the plugin's `Lang/en/lang.php` and `Lang/vi/lang.php`. The
+   `<token>` must match the `$layout_page` value the controller emits. The `News` plugin
+   (`app/GP247/Plugins/News/Provider.php`) is the reference example. Templates are in
+   `references/file-templates.md`. (Note: a *template*/theme does **not** register page-types — only a
+   plugin with its own page does.)
+
 9. **Verify.** Run `php artisan optimize:clear` to reload routes/views/config, then confirm the admin
    screen opens (and the `/livewire` path if you added it), and that enable/disable still works. If the
    user hits an error, consult the troubleshooting table in `references/file-templates.md`.
 
 ## Output format
 
-Do not print a document. Apply the edits, then give the user a short Vietnamese summary in this shape:
+Do not print a document. Apply the edits, then give the user a short English summary in this shape:
 
 ```
-Đã nâng cấp plugin <name> lên v2:
+Upgraded plugin <name> to v2:
 - [x] gp247.json → requireCore ["2.0"], requireUpdateFrom "1.0"
 - [x] Views/Admin.blade.php → layout gp247-admin::layouts.admin
-- [x] AppConfig.php → disable() dùng gp247_language_render
-- [ ] Livewire: <đã thêm / bỏ qua vì plugin chỉ hiển thị tĩnh>
-- [ ] Seo.php: <đã thêm / bỏ qua vì plugin không có trang public>
-Bước tiếp theo: chạy `php artisan optimize:clear` rồi mở màn admin để kiểm tra.
+- [x] AppConfig.php → disable() uses gp247_language_render
+- [ ] Livewire: <added / skipped because the plugin only shows static data>
+- [ ] Seo.php: <added / skipped because the plugin has no public page>
+- [ ] LayoutBlock page-type: <added / skipped because the plugin has no public storefront page>
+Next step: run `php artisan optimize:clear`, then open the admin screen to verify.
 ```
 
 Mark each line `[x]` done or `[ ]` skipped, and state *why* an optional step was skipped.
 
 ## Examples
 
-**Example 1 — static admin-only plugin**
-Input: "Nâng cấp plugin Blog ở app/GP247/Plugins/Blog lên v2. Nó chỉ hiển thị danh sách tĩnh."
-Output: Edit `gp247.json` (step 2), `Views/Admin.blade.php` (step 3), `AppConfig.php` (step 7); skip
-steps 4–6 (no jQuery) and step 8 (admin-only); the summary marks Livewire and Seo skipped with reasons
-and reminds the user to run `php artisan optimize:clear`.
+The user may phrase the request in Vietnamese, Japanese, or English; you always respond in English.
 
-**Example 2 — plugin with jQuery datepicker + public page**
-Input: "Convert plugin Booking sang core 2.0, nó có datepicker và trang đặt lịch public."
+**Example 1 — static admin-only plugin**
+Input: "Upgrade the Blog plugin at app/GP247/Plugins/Blog to v2. It only shows a static list."
+Output: Edit `gp247.json` (step 2), `Views/Admin.blade.php` (step 3), `AppConfig.php` (step 7); skip
+steps 4–6 (no jQuery), step 8 (admin-only), and step 8b (no public storefront page); the summary marks
+Livewire, Seo, and LayoutBlock page-type skipped with reasons and reminds the user to run
+`php artisan optimize:clear`.
+
+**Example 2 — plugin with jQuery datepicker + public storefront page**
+Input: "Convert the Booking plugin to core 2.0; it has a datepicker and a public booking page."
 Output: All required steps; replace the jQuery datepicker with flatpickr (step 4); add the Livewire
-screen + route (steps 5–6); add `Seo.php` + the `Provider.php` block (step 8); summary marks all boxes done.
+screen + route (steps 5–6); add `Seo.php` + the `Provider.php` sitemap block (step 8); register the
+page-type so admins can attach LayoutBlock blocks to the booking page (step 8b); summary marks all boxes done.
 
 ## Common mistakes
 
@@ -148,17 +168,19 @@ screen + route (steps 5–6); add `Seo.php` + the `Provider.php` block (step 8);
 | Deleting the legacy controller route when adding Livewire | Breaks backward compatibility — keep both routes. |
 | Adding the Livewire route without the `class_exists` guard | Errors when the Livewire file is absent. |
 | Forgetting `php artisan optimize:clear` | Admin still shows the old cached view/route — the #1 support issue. |
-| Translating code identifiers or `gp247_language_render` keys | Breaks the plugin; only the user-facing summary is Vietnamese. |
+| Translating code identifiers or `gp247_language_render` keys | Breaks the plugin — keep all identifiers and lang keys verbatim; everything you write stays in English. |
+| Registering a page-type whose token ≠ the controller's `$layout_page` | The block is selected in admin but never renders — the token in `Provider.php` must match the value `view()` emits (step 8b). |
+| Storing a pre-translated string instead of the i18n key in the page-type registry | The admin dropdown won't follow the viewer's locale — store the `::lang.layout_block_page.<token>` key, not a rendered string. |
 | Editing gp247/core, front, or shop, or every plugin at once | Out of scope — confirm the single plugin path first. |
 | Raising `requireUpdateFrom` above `"1.0"` without reason | Blocks 1-click updates; keep `"1.0"` unless a major release cannot auto-migrate. |
 | Rewriting Models / install logic | Unnecessary — 2.0 keeps the 1.x schema and logic layer; only UI + config change. |
 
 ## Bundled resources
 
-- `references/file-templates.md` — read at step 5, 6, or 8 for the full `AdminLivewire.php`,
-  `livewire.blade.php`, `Seo.php`, and `Provider.php` sitemap-block templates, the before/after
-  `gp247.json`, and the verification / troubleshooting Q&A. Load it only when you reach those steps so
-  SKILL.md stays lean.
+- `references/file-templates.md` — read at step 5, 6, 8, or 8b for the full `AdminLivewire.php`,
+  `livewire.blade.php`, `Seo.php`, the `Provider.php` sitemap block, and the `Provider.php` LayoutBlock
+  page-type block, plus the before/after `gp247.json` and the verification / troubleshooting Q&A. Load
+  it only when you reach those steps so SKILL.md stays lean.
 
 ---
 
@@ -166,7 +188,7 @@ screen + route (steps 5–6); add `Seo.php` + the `Provider.php` block (step 8);
 
 | Field | Value |
 | --- | --- |
-| `last_updated` | `2026-07-28T04:56:41Z` (UTC) |
+| `last_updated` | `2026-07-29T00:00:00Z` (UTC) |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/convert-plugin-v1-to-v2.md |
