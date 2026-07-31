@@ -242,6 +242,86 @@ register page-types — it only renders based on the `$layout_page` the controll
 
 ---
 
+## Step 8c — Total-method plugin at checkout (optional)
+
+Only for a total-method plugin (`configCode: "Total"` — coupon/point) that needs a checkout input.
+Contract: `GP247\Shop\Front\Contracts\CheckoutTotalMethod` (ADR-storefront-checkout-total-method-contract).
+
+**`AppConfig.php`** — implement the interface, reusing the plugin's own validation/session logic:
+
+```php
+use GP247\Shop\Front\Contracts\CheckoutTotalMethod;
+
+class AppConfig extends ExtensionConfigDefault implements CheckoutTotalMethod
+{
+    // …existing methods unchanged…
+
+    public function checkoutApply(array $payload): array
+    {
+        $code = trim((string) ($payload['code'] ?? ''));
+        if ($code === '') {
+            return ['error' => 1, 'msg' => gp247_language_render('cart.coupon_empty')];
+        }
+        // reuse the plugin's existing validation (e.g. FrontController::check)
+        $check = (new \App\GP247\Plugins\Extension_Key\Controllers\FrontController)->check($code, customer()->id ?? 0);
+        if (!empty($check['error'])) {
+            return ['error' => 1, 'msg' => $check['msg']];
+        }
+        $totalMethod = session('totalMethod', []);
+        $totalMethod[$this->configKey] = $code;
+        session(['totalMethod' => $totalMethod]);
+        return ['error' => 0, 'msg' => gp247_language_render($this->appPath.'::lang.process.completed')];
+    }
+
+    public function checkoutRemove(): void
+    {
+        $totalMethod = session('totalMethod', []);
+        unset($totalMethod[$this->configKey]);
+        session(['totalMethod' => $totalMethod]);
+    }
+
+    public function checkoutView(): ?string
+    {
+        return $this->appPath.'::checkout';   // Views/checkout.blade.php
+    }
+}
+```
+
+**`Views/checkout.blade.php`** — rendered INSIDE the checkout Livewire component; bind with `wire:`
+(no jQuery/fetch) and use only storefront UI tokens the active template already ships:
+
+```blade
+@php($appliedCode = session('totalMethod')[$pluginKey] ?? null)
+<div class="card p-5" wire:key="total-method-{{ $pluginKey }}">
+    <label class="block text-sm font-medium text-ink-700 mb-2">{{ gp247_language_render('cart.coupon') }}</label>
+    @if ($appliedCode)
+        <div class="flex items-center justify-between gap-3">
+            <span class="text-sm font-semibold text-emerald-600">{{ $appliedCode }}</span>
+            <button type="button" class="btn-ghost text-red-500" wire:click="removeTotal('{{ $pluginKey }}')">{{ gp247_language_render('cart.remove_coupon') }}</button>
+        </div>
+    @else
+        <div class="flex items-center gap-2">
+            <input type="text" class="input flex-1" wire:model="totalPayload.{{ $pluginKey }}.code" wire:keydown.enter.prevent="applyTotal('{{ $pluginKey }}')">
+            <button type="button" class="btn-primary" wire:click="applyTotal('{{ $pluginKey }}')" wire:loading.attr="disabled">{{ gp247_language_render('cart.apply') }}</button>
+        </div>
+    @endif
+    @if (!empty($message) && !empty($message['msg']))
+        <p class="mt-2 text-sm {{ empty($message['error']) ? 'text-emerald-600' : 'text-red-500' }}">{{ $message['msg'] }}</p>
+    @endif
+</div>
+```
+
+- Variables passed by the zone partial: `$pluginKey`, `$plugin` (getInfo array), `$message`.
+- The wizard exposes `totalPayload` / `totalMessages` state and `applyTotal($key)` / `removeTotal($key)` actions.
+- Reference implementation: the `ShopDiscount` plugin.
+
+**Template authors only** (not part of the plugin): a custom checkout view supports every total-method
+plugin by adding two includes at the confirm step —
+`@include('gp247-shop-front::partials.checkout_total_methods')` and
+`@include('gp247-shop-front::partials.order_totals')`.
+
+---
+
 ## Step 9 — verify
 
 ```bash

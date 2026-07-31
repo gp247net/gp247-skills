@@ -120,6 +120,14 @@ Do the steps in order. Steps 1–3, 5, and 8 always run. Steps 4, 6, 7 depend on
    `references/file-templates.md`. If the user wants no shop customization, skip this step entirely — the
    site still sells normally on the shop defaults.
 
+   **If you override the checkout view** (`livewire/shop_checkout-wizard.blade.php`), keep the two
+   total-method includes at the confirm step —
+   `@include('gp247-shop-front::partials.checkout_total_methods')` and
+   `@include('gp247-shop-front::partials.order_totals')`. They render every coupon/point plugin
+   (`CheckoutTotalMethod` contract) generically; dropping them silently removes the coupon input for
+   every total-method plugin. Fragments must use only UI tokens your template's precompiled CSS ships
+   (step 7).
+
 7. **(If Tailwind classes are new) rebuild the CSS.** GP247 uses **precompiled** Tailwind, not JIT — a
    class that was never built has no effect. If you only reused existing classes, no rebuild is needed.
    If you added new ones, recompile the template's CSS (`npx tailwindcss ...`) and include the output in
@@ -207,7 +215,7 @@ Summary marks front look + config + the single shop override done, other shop pa
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-07-30` |
+| Lần cuối cập nhật / Last updated | `2026-07-31` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-template.md |

@@ -122,6 +122,21 @@ optional steps apply *before* editing, then tell the user.
    `references/file-templates.md`. (Note: a *template*/theme does **not** register page-types — only a
    plugin with its own page does.)
 
+8c. **(Optional) Total-method plugin (coupon/point) at checkout.** Only when the plugin is a
+   total-method (`configCode: "Total"` — coupon, loyalty point…) that must show an input at checkout.
+   GP247 2.0 replaced the v1 jQuery `render`/`script` include with the **`CheckoutTotalMethod` contract**
+   (ADR-storefront-checkout-total-method-contract). Make `AppConfig` implement
+   `GP247\Shop\Front\Contracts\CheckoutTotalMethod` — `checkoutApply(array $payload): array` (validate +
+   set `session('totalMethod')[<key>]`, reusing the plugin's existing logic), `checkoutRemove(): void`,
+   and `checkoutView(): ?string` (fragment view name) — then add that fragment (e.g.
+   `Views/checkout.blade.php`) using `wire:model="totalPayload.<key>.code"` /
+   `wire:click="applyTotal('<key>')"` and **only storefront UI tokens the active template already ships**
+   (a brand-new Tailwind class won't exist in the pre-built CSS and silently has no style). The checkout
+   auto-discovers the plugin (`code='total'` + implements the interface) and renders the fragment; a total
+   plugin that does not implement the interface is hidden + logged. The data layer
+   (`session('totalMethod')`, `getInfo()`, `addOrder()`) is unchanged. The `ShopDiscount` plugin is the
+   reference example. Templates are in `references/file-templates.md`.
+
 9. **Verify.** Run `php artisan optimize:clear` to reload routes/views/config, then confirm the admin
    screen opens (and the `/livewire` path if you added it), and that enable/disable still works. If the
    user hits an error, consult the troubleshooting table in `references/file-templates.md`.
@@ -138,6 +153,7 @@ Upgraded plugin <name> to v2:
 - [ ] Livewire: <added / skipped because the plugin only shows static data>
 - [ ] Seo.php: <added / skipped because the plugin has no public page>
 - [ ] LayoutBlock page-type: <added / skipped because the plugin has no public storefront page>
+- [ ] Total-method checkout: <added / skipped because the plugin is not a total-method (coupon/point)>
 Next step: run `php artisan optimize:clear`, then open the admin screen to verify.
 ```
 
@@ -171,13 +187,15 @@ page-type so admins can attach LayoutBlock blocks to the booking page (step 8b);
 | Translating code identifiers or `gp247_language_render` keys | Breaks the plugin — keep all identifiers and lang keys verbatim; everything you write stays in English. |
 | Registering a page-type whose token ≠ the controller's `$layout_page` | The block is selected in admin but never renders — the token in `Provider.php` must match the value `view()` emits (step 8b). |
 | Storing a pre-translated string instead of the i18n key in the page-type registry | The admin dropdown won't follow the viewer's locale — store the `::lang.layout_block_page.<token>` key, not a rendered string. |
+| For a total-method plugin, reusing the v1 jQuery `render`/`script` at checkout | 2.0 loads no jQuery and the checkout is Livewire; implement `CheckoutTotalMethod` + a `wire:` fragment instead (step 8c). |
+| Using a brand-new Tailwind class in a checkout/storefront fragment | The template's CSS is pre-compiled; unknown classes have no style — reuse tokens the template already ships (step 8c / gp247.md §3b). |
 | Editing gp247/core, front, or shop, or every plugin at once | Out of scope — confirm the single plugin path first. |
 | Raising `requireUpdateFrom` above `"1.0"` without reason | Blocks 1-click updates; keep `"1.0"` unless a major release cannot auto-migrate. |
 | Rewriting Models / install logic | Unnecessary — 2.0 keeps the 1.x schema and logic layer; only UI + config change. |
 
 ## Bundled resources
 
-- `references/file-templates.md` — read at step 5, 6, 8, or 8b for the full `AdminLivewire.php`,
+- `references/file-templates.md` — read at step 5, 6, 8, 8b, or 8c for the full `AdminLivewire.php`,
   `livewire.blade.php`, `Seo.php`, the `Provider.php` sitemap block, and the `Provider.php` LayoutBlock
   page-type block, plus the before/after `gp247.json` and the verification / troubleshooting Q&A. Load
   it only when you reach those steps so SKILL.md stays lean.
@@ -188,7 +206,7 @@ page-type so admins can attach LayoutBlock blocks to the booking page (step 8b);
 
 | Field | Value |
 | --- | --- |
-| Last updated | `2026-07-29` |
+| Last updated | `2026-07-31` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/convert-plugin-v1-to-v2.md |

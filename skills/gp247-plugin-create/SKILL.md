@@ -46,7 +46,11 @@ before scaffolding — **never guess the business logic**. You need four answers
    name and the `configKey`; they must match and must not change after release.
 2. **Surface** — admin-only, or also a **public (storefront) page** for visitors. This decides whether
    `Controllers/FrontController.php` and `Seo.php` are kept. (If `gp247/front` is not installed, the
-   scaffolder skips `FrontController.php` automatically — that is normal, not an error.)
+   scaffolder skips `FrontController.php` automatically — that is normal, not an error.) A special
+   surface is a **checkout total-method** (coupon/point, `configCode: "Total"`): besides `getInfo()`, its
+   `AppConfig` must implement `GP247\Shop\Front\Contracts\CheckoutTotalMethod` so the Livewire checkout
+   shows its input — see the convert guide step 8c (`gp247-docs/extension/convert-plugin-v1-to-v2.md`)
+   and the `ShopDiscount` plugin as the reference.
 3. **Own data table?** — does it store records of its own (needs a table created on install), or does it
    only hold a handful of settings?
 4. **Site-owner-editable settings?** — any value the site owner may change from admin (toggles,
@@ -179,7 +183,7 @@ CRUD screen over the table; if a later v1.1 adds a column, migrate it idempotent
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-07-30` |
+| Lần cuối cập nhật / Last updated | `2026-07-31` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-plugin.md |
