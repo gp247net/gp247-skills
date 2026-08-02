@@ -120,7 +120,10 @@ Do the steps in order. Steps 1–3, 5, and 8 always run. Steps 4, 6, 7 depend on
    `references/file-templates.md`. If the user wants no shop customization, skip this step entirely — the
    site still sells normally on the shop defaults.
 
-   **If you override the checkout view** (`livewire/shop_checkout-wizard.blade.php`), keep the two
+   Total-method plugins (coupon/point): the simplest and recommended path is to **not** override the
+   checkout view at all — the `gp247/shop` default view already includes the total-method zone, so those
+   plugins work automatically. **Only if you override the checkout view**
+   (`livewire/shop_checkout-wizard.blade.php`) for custom styling, keep the two
    total-method includes at the confirm step —
    `@include('gp247-shop-front::partials.checkout_total_methods')` and
    `@include('gp247-shop-front::partials.order_totals')`. They render every coupon/point plugin
