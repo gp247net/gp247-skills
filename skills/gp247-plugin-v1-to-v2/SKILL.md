@@ -30,7 +30,8 @@ natural-language document — never translate code identifiers, blade directives
   instead; it scaffolds the full v2 structure (Livewire, Seo, new layout) already.
 - Upgrading gp247/core, gp247/front, or gp247/shop themselves — this skill only touches a **plugin**
   folder under `app/GP247/Plugins/<Extension_Key>/` (or an equivalent standalone plugin package).
-- A plugin already on the v2 template (`requireCore` already `["2.0"]` and layout already
+- A plugin already on the v2 template (`requireCore` already `["2.1"]`, dependency keys already
+  `requireComposerPackages`/`requireGp247Extensions`, and layout already
   `gp247-admin::layouts.admin`) — report that no upgrade is needed instead of editing.
 
 ## Input
@@ -57,13 +58,18 @@ optional steps apply *before* editing, then tell the user.
 1. **Safety branch.** If the plugin is under Git, create a working branch (`git checkout -b upgrade-to-v2`).
    Otherwise ask the user to back up the folder first. This is the rollback path — do not skip it.
 
-2. **`gp247.json` (required).** Set `requireCore` to `["2.0"]` and add `"requireUpdateFrom": "1.0"`.
-   Leave `version`, `requirePackages`, `requireExtensions` unchanged.
+2. **`gp247.json` (required).** Set `requireCore` to `["2.1"]`, add `"requireUpdateFrom": "1.0"`, and
+   rename the dependency keys to the core 2.1 names: `requirePackages` → `requireComposerPackages`,
+   `requireExtensions` → `requireGp247Extensions` (keep their values). Leave `version` unchanged.
 
    ```json
-   "requireCore": ["2.0"],
+   "requireCore": ["2.1"],
    "requireUpdateFrom": "1.0",
+   "requireComposerPackages": [],
+   "requireGp247Extensions": [],
    ```
+
+   (Core 2.1 still reads the old keys for backward compatibility, but they are deprecated — emit the new ones.)
 
 3. **Admin view layout (required — this is what breaks the plugin).** In the admin blade view, change
    the master layout on the first `@extends(...)` line:
@@ -147,7 +153,7 @@ Do not print a document. Apply the edits, then give the user a short English sum
 
 ```
 Upgraded plugin <name> to v2:
-- [x] gp247.json → requireCore ["2.0"], requireUpdateFrom "1.0"
+- [x] gp247.json → requireCore ["2.1"], requireUpdateFrom "1.0", keys renamed to requireComposerPackages/requireGp247Extensions
 - [x] Views/Admin.blade.php → layout gp247-admin::layouts.admin
 - [x] AppConfig.php → disable() uses gp247_language_render
 - [ ] Livewire: <added / skipped because the plugin only shows static data>

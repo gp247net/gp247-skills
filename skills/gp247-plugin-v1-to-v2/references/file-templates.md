@@ -20,21 +20,23 @@ route-name prefix already used in `Route.php`. Source of truth:
 }
 ```
 
-**After (v2):**
+**After (v2 — core 2.1):**
 
 ```json
 {
     "version": "1.0",
-    "requireCore": ["2.0"],
+    "requireCore": ["2.1"],
     "requireUpdateFrom": "1.0",
-    "requirePackages": [],
-    "requireExtensions": []
+    "requireComposerPackages": [],
+    "requireGp247Extensions": []
 }
 ```
 
-- `requireCore`: the core version the plugin targets — set to `["2.0"]`.
+- `requireCore`: the core version the plugin targets — set to `["2.1"]`.
 - `requireUpdateFrom`: minimum installed version allowed to 1-click update to this release. `"1.0"` is
   safe (practically no restriction); only raise it for a major release that cannot auto-migrate.
+- `requireComposerPackages` / `requireGp247Extensions`: renamed from `requirePackages` / `requireExtensions`
+  in core 2.1. Core 2.1 still reads the old keys (backward compatible) but they are deprecated — emit the new ones.
 
 ---
 

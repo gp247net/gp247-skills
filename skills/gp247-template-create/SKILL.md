@@ -83,8 +83,8 @@ Do the steps in order. Steps 1–3, 5, and 8 always run. Steps 4, 6, 7 depend on
    and surface the message — do not hand-create the folder.
 
 3. **Fill `gp247.json`.** Set `name`, author fields, and confirm the compatibility fields. `configKey`
-   must equal the folder name; `configGroup` is `"Templates"`; `requireCore` is `["2.0"]`;
-   `requirePackages` **must include `"gp247/front"`** (add `"gp247/shop"` if the template is only for
+   must equal the folder name; `configGroup` is `"Templates"`; `requireCore` is `["2.1"]`;
+   `requireComposerPackages` **must include `"gp247/front"`** (add `"gp247/shop"` if the template is only for
    selling sites); start `version` at `"1.0"` and `requireUpdateFrom` at `"1.0"`. Field reference in
    `references/file-templates.md`.
 
@@ -157,7 +157,7 @@ line `[x]` done or `[ ]` skipped, and say *why* an optional step was skipped):
 ```
 Created template <Name> (v2, update-safe):
 - [x] Scaffolded: php artisan gp247:make-template --name=<Name> --download=0
-- [x] gp247.json → configGroup "Templates", configKey <Name>, requirePackages ["gp247/front"], version 1.0
+- [x] gp247.json → configGroup "Templates", configKey <Name>, requireComposerPackages ["gp247/front"], version 1.0
 - [ ] Update-safe config: <effective/save helpers wired / skipped — no editable settings>
 - [x] Front look: layout + screen/home, page_detail, 404 (<what it looks like>)
 - [ ] Shop overrides: <copied screen/shop_cart only / skipped — using gp247/shop fallback defaults>
@@ -173,7 +173,7 @@ The user may phrase the request in Vietnamese, Japanese, or English; you always 
 **Example 1 — front-only theme, no shop customization**
 Input: "Tạo template GP247 tên AuroraStore, trang chủ có banner lớn + lưới sản phẩm nổi bật, còn các
 trang shop giữ mặc định." → Spec is clear and the user explicitly wants shop pages on the default, so
-confirm and scaffold `AuroraStore`; set `gp247.json` (`requirePackages: ["gp247/front"]`); build
+confirm and scaffold `AuroraStore`; set `gp247.json` (`requireComposerPackages: ["gp247/front"]`); build
 `layout.blade.php` + `screen/home.blade.php` (banner + featured grid) + `page_detail`/`404`; **skip the
 shop-override step** — product list/cart/checkout run on the `gp247/shop` fallback. Add vi/en strings.
 Summary marks the shop-overrides step skipped with that reason.
@@ -191,7 +191,7 @@ Summary marks front look + config + the single shop override done, other shop pa
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
-| Forgetting `requirePackages: ["gp247/front"]` | The template silently does nothing — a template only runs with the storefront present. |
+| Forgetting `requireComposerPackages: ["gp247/front"]` | The template silently does nothing — a template only runs with the storefront present. |
 | Copying the whole `gp247/shop` view set into the template | Needless maintenance burden; those pages freeze against shop-package updates. Override only the pages the user asked for (step 6). |
 | Assuming a template with no shop pages breaks the shop | It doesn't — `gp247/shop` falls back to its own default views. Only override to change the look. |
 | Letting the site owner edit `config.php` | 1-click update overwrites the file → their choices vanish. Editable values live in `admin_config` via the config helpers (step 4). |

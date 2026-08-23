@@ -20,10 +20,10 @@ The scaffolder emits this shape; edit the values, not the shape:
     "configCode": "<Name>",
     "configKey": "<Name>",
     "version": "1.0",
-    "requireCore": ["2.0"],
+    "requireCore": ["2.1"],
     "requireUpdateFrom": "1.0",
-    "requirePackages": ["gp247/front"],
-    "requireExtensions": []
+    "requireComposerPackages": ["gp247/front"],
+    "requireGp247Extensions": []
 }
 ```
 
@@ -33,10 +33,12 @@ The scaffolder emits this shape; edit the values, not the shape:
 | `configKey` | Unique id; **must equal the folder name**; never change after release. |
 | `configCode` | Usually the same as `configKey`. |
 | `version` | Semver-ish (`1.0`, `1.1`, `2.0`). **Every release must be greater** than the installed one (compared with `version_compare`) or 1-click update refuses it. |
-| `requireCore` | `["2.0"]` for the v2 standard. |
-| `requirePackages` | **Must include `"gp247/front"`** — a template only runs with the storefront. Add `"gp247/shop"` if the theme is only meant for selling sites. |
+| `requireCore` | `["2.1"]` for the v2 standard. |
+| `requireComposerPackages` | **Must include `"gp247/front"`** — a template only runs with the storefront. Add `"gp247/shop"` if the theme is only meant for selling sites. |
 | `requireUpdateFrom` | Minimum installed version allowed to 1-click update to this release. `"1.0"` = practically no restriction. |
-| `requireExtensions` | Other GP247 extensions required first. Usually empty for a template. |
+| `requireGp247Extensions` | Other GP247 extensions required first. Usually empty for a template. |
+
+> `requireComposerPackages`/`requireGp247Extensions` are the gp247/core 2.1 names (renamed from `requirePackages`/`requireExtensions`). Always emit the new keys; core 2.1 still reads the old ones for backward compatibility but they are deprecated.
 
 ---
 
@@ -48,7 +50,7 @@ template `<Name>` is referenced as `GP247TemplatePath::<Name>.screen.home`. You 
 
 ```
 app/GP247/Templates/<Name>/
-├── gp247.json          # declares template info (requirePackages: ["gp247/front"])
+├── gp247.json          # declares template info (requireComposerPackages: ["gp247/front"])
 ├── AppConfig.php        # lifecycle: install/uninstall/enable/disable/setupStore/update
 ├── config.php           # DEFAULTS ONLY (overwritten on update)
 ├── function.php         # template helpers (config overlay helpers live here)

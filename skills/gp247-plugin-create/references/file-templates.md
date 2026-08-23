@@ -21,10 +21,10 @@ The scaffolder emits this; edit the values, not the shape:
     "configCode": "<Name>",
     "configKey": "<Name>",
     "version": "1.0",
-    "requireCore": ["2.0"],
+    "requireCore": ["2.1"],
     "requireUpdateFrom": "1.0",
-    "requirePackages": [],
-    "requireExtensions": []
+    "requireComposerPackages": [],
+    "requireGp247Extensions": []
 }
 ```
 
@@ -34,10 +34,12 @@ The scaffolder emits this; edit the values, not the shape:
 | `configCode` | Usually the same as `configKey`. |
 | `configGroup` | Always `"Plugins"` for a plugin. |
 | `version` | Semver-ish (`1.0`, `1.1`, `2.0`). **Every release must be greater** than the installed one (compared with `version_compare`) or 1-click update refuses it. |
-| `requireCore` | `["2.0"]` for the v2 standard. |
+| `requireCore` | `["2.1"]` for the v2 standard. |
 | `requireUpdateFrom` | Minimum installed version allowed to 1-click update to this release. `"1.0"` = practically no restriction; raise it only when a major release cannot auto-migrate from older versions. |
-| `requirePackages` | Composer packages from packagist.org that must be present. |
-| `requireExtensions` | Other GP247 extensions required first (e.g. `Shop`, `Front`, `News`). |
+| `requireComposerPackages` | Composer packages from packagist.org that must be present. |
+| `requireGp247Extensions` | Other GP247 extensions required first (e.g. `Shop`, `Front`, `News`). |
+
+> `requireComposerPackages`/`requireGp247Extensions` are the gp247/core 2.1 names (renamed from `requirePackages`/`requireExtensions`). Always emit the new keys; core 2.1 still reads the old ones for backward compatibility but they are deprecated.
 
 ---
 

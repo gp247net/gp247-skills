@@ -77,9 +77,9 @@ Do the steps in order. Steps 1–3 and 8 always run. Steps 4–7 depend on the a
    returns `{"error":0,...}`. If it errors, stop and surface the message — do not hand-create the folder.
 
 3. **Fill `gp247.json`.** Set `name`, author fields, and confirm the version/compatibility fields.
-   `configKey` must equal the folder name; `configGroup` is `"Plugins"`; `requireCore` is `["2.0"]`;
+   `configKey` must equal the folder name; `configGroup` is `"Plugins"`; `requireCore` is `["2.1"]`;
    start `version` at `"1.0"` and `requireUpdateFrom` at `"1.0"`. List real dependencies in
-   `requirePackages` (composer) and `requireExtensions` (e.g. `Shop`, `Front`, `News`) only if truly
+   `requireComposerPackages` (composer) and `requireGp247Extensions` (e.g. `Shop`, `Front`, `News`) only if truly
    needed. Field reference in `references/file-templates.md`.
 
 4. **(If it has its own table) `Models/ExtensionModel.php`.** Put the `Schema::create(...)` in
@@ -125,7 +125,7 @@ line `[x]` done or `[ ]` skipped, and say *why* an optional step was skipped):
 ```
 Created plugin <Name> (v2, update-safe):
 - [x] Scaffolded: php artisan gp247:make-plugin --name=<Name> --download=0
-- [x] gp247.json → configKey <Name>, requireCore ["2.0"], version 1.0
+- [x] gp247.json → configKey <Name>, requireCore ["2.1"], version 1.0
 - [ ] ExtensionModel table: <created `<table>` / skipped — no own table>
 - [ ] Update-safe config: <effective/save helpers wired / skipped — no editable settings>
 - [x] Admin screen: Livewire AdminLivewire + livewire.blade.php (<what it does>)
