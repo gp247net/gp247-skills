@@ -24,7 +24,8 @@ The scaffolder emits this; edit the values, not the shape:
     "requireCore": ["2.1"],
     "requireUpdateFrom": "1.0",
     "requireComposerPackages": [],
-    "requireGp247Extensions": []
+    "requireGp247Extensions": [],
+    "requireLivewire": false
 }
 ```
 
@@ -38,6 +39,7 @@ The scaffolder emits this; edit the values, not the shape:
 | `requireUpdateFrom` | Minimum installed version allowed to 1-click update to this release. `"1.0"` = practically no restriction; raise it only when a major release cannot auto-migrate from older versions. |
 | `requireComposerPackages` | Composer packages from packagist.org that must be present. |
 | `requireGp247Extensions` | Other GP247 extensions required first (e.g. `Shop`, `Front`, `News`). |
+| `requireLivewire` | Whether the plugin needs Livewire (`true`/`false`). `false` by default — the scaffold ships a Livewire admin screen registered in `Provider.php`, and Livewire is bundled with core. |
 
 > `requireComposerPackages`/`requireGp247Extensions` are the gp247/core 2.1 names (renamed from `requirePackages`/`requireExtensions`). Always emit the new keys; core 2.1 still reads the old ones for backward compatibility but they are deprecated.
 

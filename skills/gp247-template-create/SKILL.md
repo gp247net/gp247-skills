@@ -79,8 +79,11 @@ Do the steps in order. Steps 1–3, 5, and 8 always run. Steps 4, 6, 7 depend on
 
    `--download=0` writes the template directly to `app/GP247/Templates/<Name>` (and its assets to
    `public/GP247/Templates/<Name>`), usable immediately; `--download=1` instead packages a `.zip` in
-   `storage/tmp` for distribution. On success the terminal returns `{"error":0,...}`. If it errors, stop
-   and surface the message — do not hand-create the folder.
+   `storage/tmp` for distribution. On success the terminal prints a human line (e.g. `Success`); add
+   `--json` for the standardized envelope
+   `{"ok":true,"command":"gp247:make-template","data":{"key":"<Name>","path":"...","msg":"Success"},"warnings":[],"error":null}`
+   (zip path at `data.path`), and check the exit code (0 = success). If it errors, stop and surface the
+   message — do not hand-create the folder.
 
 3. **Fill `gp247.json`.** Set `name`, author fields, and confirm the compatibility fields. `configKey`
    must equal the folder name; `configGroup` is `"Templates"`; `requireCore` is `["2.1"]`;
@@ -218,7 +221,7 @@ Summary marks front look + config + the single shop override done, other shop pa
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-07-31` |
+| Lần cuối cập nhật / Last updated | `2026-08-23` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-template.md |

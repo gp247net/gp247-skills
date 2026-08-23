@@ -28,11 +28,15 @@ route-name prefix already used in `Route.php`. Source of truth:
     "requireCore": ["2.1"],
     "requireUpdateFrom": "1.0",
     "requireComposerPackages": [],
-    "requireGp247Extensions": []
+    "requireGp247Extensions": [],
+    "requireLivewire": false
 }
 ```
 
 - `requireCore`: the core version the plugin targets — set to `["2.1"]`.
+- `requireLivewire`: whether the plugin needs Livewire (`true`/`false`); add it when introducing a
+  Livewire screen (register its namespace in `Provider.php` with
+  `Livewire::addNamespace(...)`, guarded by `class_exists(\Livewire\Livewire::class)`).
 - `requireUpdateFrom`: minimum installed version allowed to 1-click update to this release. `"1.0"` is
   safe (practically no restriction); only raise it for a major release that cannot auto-migrate.
 - `requireComposerPackages` / `requireGp247Extensions`: renamed from `requirePackages` / `requireExtensions`

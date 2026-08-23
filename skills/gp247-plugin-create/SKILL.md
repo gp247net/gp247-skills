@@ -74,13 +74,17 @@ Do the steps in order. Steps 1–3 and 8 always run. Steps 4–7 depend on the a
 
    `--download=0` writes the plugin directly to `app/GP247/Plugins/<Name>` (usable immediately);
    `--download=1` instead packages a `.zip` in `storage/tmp` for distribution. On success the terminal
-   returns `{"error":0,...}`. If it errors, stop and surface the message — do not hand-create the folder.
+   prints a human line (e.g. `Success`); add `--json` for the standardized envelope
+   `{"ok":true,"command":"gp247:make-plugin","data":{"key":"<Name>","path":"...","msg":"Success"},"warnings":[],"error":null}`
+   (zip path at `data.path`), and check the exit code (0 = success). If it errors, stop and surface the
+   message — do not hand-create the folder.
 
 3. **Fill `gp247.json`.** Set `name`, author fields, and confirm the version/compatibility fields.
    `configKey` must equal the folder name; `configGroup` is `"Plugins"`; `requireCore` is `["2.1"]`;
    start `version` at `"1.0"` and `requireUpdateFrom` at `"1.0"`. List real dependencies in
    `requireComposerPackages` (composer) and `requireGp247Extensions` (e.g. `Shop`, `Front`, `News`) only if truly
-   needed. Field reference in `references/file-templates.md`.
+   needed. Keep `requireLivewire` (`false` by default; set `true` only if the plugin genuinely requires
+   Livewire). Field reference in `references/file-templates.md`.
 
 4. **(If it has its own table) `Models/ExtensionModel.php`.** Put the `Schema::create(...)` in
    `installExtension()` (guarded by `Schema::hasTable`) and the `Schema::dropIfExists(...)` in
@@ -97,7 +101,10 @@ Do the steps in order. Steps 1–3 and 8 always run. Steps 4–7 depend on the a
 
 6. **Admin screen — Livewire + TailAdmin (v2 standard).** Implement the user's admin UI in
    `Livewire/AdminLivewire.php` (logic) and `Views/livewire.blade.php` (UI). `AdminLivewire` extends
-   `GP247AdminComponent`, so it already has RBAC, toasts, and the shared admin layout. Prefer the shared
+   `GP247AdminComponent`, so it already has RBAC, toasts, and the shared admin layout. The scaffold
+   `Provider.php` already registers the Livewire namespace
+   (`Livewire::addNamespace('<Name>', classNamespace: 'App\GP247\Plugins\<Name>\Livewire')`, guarded by
+   `class_exists(\Livewire\Livewire::class)`) — keep it so the component resolves. Prefer the shared
    `<x-gp247::*>` components over raw HTML. **No jQuery / AdminLTE / select2** — 2.0 does not load
    jQuery; use Livewire/Alpine (and flatpickr for dates). Render every string via
    `trans('Plugins/<Name>::lang.key')` or `gp247_language_render(...)`; add the values to both
@@ -183,7 +190,7 @@ CRUD screen over the table; if a later v1.1 adds a column, migrate it idempotent
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-07-31` |
+| Lần cuối cập nhật / Last updated | `2026-08-23` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-plugin.md |

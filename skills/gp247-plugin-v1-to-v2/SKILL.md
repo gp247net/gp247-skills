@@ -212,7 +212,7 @@ page-type so admins can attach LayoutBlock blocks to the booking page (step 8b);
 
 | Field | Value |
 | --- | --- |
-| Last updated | `2026-07-31` |
+| Last updated | `2026-08-23` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/convert-plugin-v1-to-v2.md |
