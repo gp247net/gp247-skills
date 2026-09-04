@@ -47,7 +47,7 @@ before scaffolding — **never guess the business logic**. You need four answers
 2. **Surface** — admin-only, or also a **public (storefront) page** for visitors. This decides whether
    `Controllers/FrontController.php` and `Seo.php` are kept. (If `gp247/front` is not installed, the
    scaffolder skips `FrontController.php` automatically — that is normal, not an error.) A special
-   surface is a **checkout total-method** (coupon/point, `configCode: "Total"`): besides `getInfo()`, its
+   surface is a **checkout total-method** (coupon/point, `configCode: "Promotion"` — legacy `"Total"` still accepted): besides `getInfo()`, its
    `AppConfig` must implement `GP247\Shop\Front\Contracts\CheckoutTotalMethod` so the Livewire checkout
    shows its input — see the convert guide step 8c (`gp247-docs/extension/convert-plugin-v1-to-v2.md`)
    and the `ShopDiscount` plugin as the reference.

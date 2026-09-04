@@ -129,7 +129,7 @@ optional steps apply *before* editing, then tell the user.
    plugin with its own page does.)
 
 8c. **(Optional) Total-method plugin (coupon/point) at checkout.** Only when the plugin is a
-   total-method (`configCode: "Total"` — coupon, loyalty point…) that must show an input at checkout.
+   total-method (`configCode: "Promotion"` — coupon, loyalty point…; legacy `"Total"` still accepted) that must show an input at checkout.
    GP247 2.0 replaced the v1 jQuery `render`/`script` include with the **`CheckoutTotalMethod` contract**
    (ADR-storefront-checkout-total-method-contract). Make `AppConfig` implement
    `GP247\Shop\Front\Contracts\CheckoutTotalMethod` — `checkoutApply(array $payload): array` (validate +
@@ -138,7 +138,7 @@ optional steps apply *before* editing, then tell the user.
    `Views/checkout.blade.php`) using `wire:model="totalPayload.<key>.code"` /
    `wire:click="applyTotal('<key>')"` and **only storefront UI tokens the active template already ships**
    (a brand-new Tailwind class won't exist in the pre-built CSS and silently has no style). The checkout
-   auto-discovers the plugin (`code='total'` + implements the interface) and renders the fragment; a total
+   auto-discovers the plugin (configCode `Promotion`, legacy `Total` + implements the interface) and renders the fragment; a total
    plugin that does not implement the interface is hidden + logged. The data layer
    (`session('totalMethod')`, `getInfo()`, `addOrder()`) is unchanged. The `ShopDiscount` plugin is the
    reference example. Templates are in `references/file-templates.md`.

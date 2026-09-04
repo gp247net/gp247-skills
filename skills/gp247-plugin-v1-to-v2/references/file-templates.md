@@ -250,7 +250,7 @@ register page-types — it only renders based on the `$layout_page` the controll
 
 ## Step 8c — Total-method plugin at checkout (optional)
 
-Only for a total-method plugin (`configCode: "Total"` — coupon/point) that needs a checkout input.
+Only for a total-method plugin (`configCode: "Promotion"` — coupon/point; legacy `"Total"` still accepted) that needs a checkout input.
 Contract: `GP247\Shop\Front\Contracts\CheckoutTotalMethod` (ADR-storefront-checkout-total-method-contract).
 
 **`AppConfig.php`** — implement the interface, reusing the plugin's own validation/session logic:
