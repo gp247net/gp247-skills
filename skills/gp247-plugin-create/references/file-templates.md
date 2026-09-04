@@ -25,7 +25,8 @@ The scaffolder emits this; edit the values, not the shape:
     "requireUpdateFrom": "1.0",
     "requireComposerPackages": [],
     "requireGp247Extensions": [],
-    "requireLivewire": false
+    "requireLivewire": false,
+    "storeScope": "global"
 }
 ```
 
@@ -40,6 +41,7 @@ The scaffolder emits this; edit the values, not the shape:
 | `requireComposerPackages` | Composer packages from packagist.org that must be present. |
 | `requireGp247Extensions` | Other GP247 extensions required first (e.g. `Shop`, `Front`, `News`). |
 | `requireLivewire` | Whether the plugin needs Livewire (`true`/`false`). `false` by default — the scaffold ships a Livewire admin screen registered in `Provider.php`, and Livewire is bundled with core. |
+| `storeScope` | Multi-store behaviour: `"global"` (default, system-wide), `"store"` (per-store enable + settings), `"platform"` (owner-only, e.g. in-marketplace payment). For `"store"`: read settings via `gp247_plugin_store_id()` (group-qualified, GLOBAL fallback), override `ConfigForm::storeScoped()`→true + `enableKey()`→configKey, and append the admin segment to `gp247-config.admin.store_scoped_segments` in `Provider.php`. Secrets (`password` fields) inherit but are never revealed at a sub-store. Reference plugin: `ShippingStandard`. |
 
 > `requireComposerPackages`/`requireGp247Extensions` are the gp247/core 2.1 names (renamed from `requirePackages`/`requireExtensions`). Always emit the new keys; core 2.1 still reads the old ones for backward compatibility but they are deprecated.
 
@@ -205,3 +207,60 @@ public function update(?string $fromVersion = null)
 | `admin_config` rows (the `<Name>_config` override, install flags) | **Preserved**. |
 | The plugin's own data table(s) | **Preserved** (migrate structure via the `update()` hook). |
 | User-uploaded files | Must **not** live inside the plugin folder — store under a shared `public/GP247/…` area or `storage/`, or they are lost on update. |
+
+## 6. Secret / encrypted settings (step 5) — credentials must never be plaintext
+
+Requires gp247/core ≥ 3.0.3 (the `Secret` cast, the `security` flag and `gp247:encryption-key-rotate`).
+A plugin that talks to a paid gateway or external API almost always has a **credential** to store; design
+it as a secret from the start.
+
+### 6a. Secret in the admin config screen (the common case)
+The plugin's admin screen extends `GP247\Core\AdminShell\Infrastructure\ConfigForm`. Declare the credential
+field as `password` — core masks it, sets `admin_config.security = 1` and encrypts it at rest for you:
+
+```php
+protected function fieldTypes(): array
+{
+    return [
+        'enable'        => 'bool',
+        'api_secret'    => 'password',   // masked in UI + encrypted at rest (enc:v2:…)
+        'webhook_key'   => 'password',
+    ];
+}
+```
+
+Read it anywhere with `gp247_config('api_secret')` / `gp247_config($this->configKey.'_secret', $storeId)`
+— it comes back as plaintext transparently. Never echo it to a Blade view or a log line. Seed a blank
+default in `config.php` (`'api_secret' => ''`) like any other setting; the value only exists once the site
+owner enters it.
+
+### 6b. Secret in the plugin's OWN table
+For a secret column outside `admin_config` (e.g. a per-customer OAuth token your plugin stores), use the
+shared cast — one line, no crypto code:
+
+```php
+// In the model:
+protected $casts = [
+    'access_token' => \GP247\Core\Casts\Secret::class,
+];
+```
+
+Then, in `Provider.php` (inside the `gp247_extension_check_active(...)` block), register the column so the
+diagnostics and key-rotation commands cover it:
+
+```php
+config(['gp247-config.security.encrypted_columns.<table_without_prefix>' => ['access_token']]);
+```
+
+Rules for the host column: it must be **TEXT** (ciphertext is long); it **cannot be searched/filtered**
+while encrypted (add a separate blind-index column — e.g. an HMAC — if you need lookup); and the table
+needs an `id` primary key so `gp247:encryption-key-rotate` can update rows.
+
+### 6c. What NOT to do
+- Do not implement your own `Crypt::encryptString` / `base64` scheme — always go through the `password`
+  field type or the `Secret` cast, so the value uses the dedicated key and the shared rotation tooling.
+- Do not store a credential in `config.php` / `.env` shipped with the plugin, or in a plain column.
+- Do not log the credential or return it in an API response. On the admin screen, keep it write-only
+  (show "•••" / an "enter to change" affordance), never re-render the stored value.
+
+Full operator guide (dedicated `GP247_ENCRYPTION_KEY`, safe key change): gp247-docs `system/data-encryption.md`.

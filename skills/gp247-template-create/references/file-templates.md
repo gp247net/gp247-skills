@@ -241,3 +241,22 @@ public function update(?string $fromVersion = null)
 | `public/GP247/Templates/<Name>/…` (the template's css/js/images) | **Deleted and replaced**. |
 | `admin_config` rows (the `<Name>_config` override, install flags, store assignment) | **Preserved**. |
 | User-uploaded files | Must **not** live inside the template folder — store under a shared area or `storage/`, or they are lost on update. |
+
+## Secret settings (encryption at rest, gp247/core ≥ 3.0.3)
+
+A template usually only stores display options, but if you add an option that holds a **credential**
+(a third-party API secret/token), design it as a secret, never a plain option:
+
+- **On the admin config screen (`ConfigForm`)**: declare the field as `password` in `fieldTypes()`. Core
+  masks it, sets `admin_config.security = 1` and encrypts it at rest (`enc:v2:…`). Read it with
+  `gp247_config(...)`, which returns plaintext. Keep it write-only in the UI (never re-render the value).
+- **Public/browser keys are not secrets** — a value meant to appear in the page HTML (Google Maps browser
+  key, a public site tag) stays an ordinary option; encrypting it would be pointless.
+- **A secret column in a table the template owns**: cast it with
+  `protected $casts = ['col' => \GP247\Core\Casts\Secret::class]`, make the column TEXT, and register
+  `table => [cols]` into `config('gp247-config.security.encrypted_columns')` in `Provider.php` so
+  `gp247:doctor` / `gp247:encryption-key-rotate` cover it. Encrypted columns are not searchable.
+
+Do not roll your own encryption; always use the `password` field type or the `Secret` cast so the value
+uses the dedicated `GP247_ENCRYPTION_KEY` and the shared rotation tooling. Full operator guide:
+gp247-docs `system/data-encryption.md`.

@@ -124,6 +124,21 @@ files; DB-schema changes between releases are migrated in the `AppConfig::update
 (idempotent, guarded by `version_compare`); and no user-uploaded files are stored inside the plugin
 folder (both `app/…` and `public/…` copies are deleted and replaced on update).
 
+**Secret settings must be encrypted at rest** (gp247/core ≥ 3.0.3; details in
+`references/file-templates.md`). Whenever a config field holds a **credential** — API key, access token,
+password, OAuth client secret, webhook signing secret — design it as a secret, never plaintext:
+- **In the admin config screen (`ConfigForm`)**, declare the field as `password` in `fieldTypes()`. Core
+  then masks it, flags the `admin_config` row as secret (`security = 1`) and **encrypts it at rest**
+  automatically — no crypto code in the plugin. Read it back with `gp247_config(...)`, which returns
+  plaintext transparently.
+- **For a secret column in the plugin's OWN table** (not `admin_config`), cast it with
+  `protected $casts = ['api_token' => \GP247\Core\Casts\Secret::class]`, make the column **TEXT**, and
+  register `table => [columns]` into `config('gp247-config.security.encrypted_columns')` in `Provider.php`
+  so `gp247:doctor` and `gp247:encryption-key-rotate` cover it.
+- An encrypted value **cannot be searched/filtered** (`WHERE col = ?` is meaningless) — add a separate
+  blind-index column if lookup is needed. Do not print secrets to logs/CLI. On a core older than 3.0.3
+  these casts/flags do not exist; keep such a plugin's `requireCore` at `["3.0"]` and note the version.
+
 ## Output format
 
 Do not print a document. Apply the edits, then give a short English summary in this shape (mark each
@@ -190,7 +205,7 @@ CRUD screen over the table; if a later v1.1 adds a column, migrate it idempotent
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-08-23` |
+| Lần cuối cập nhật / Last updated | `2026-09-04` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-plugin.md |

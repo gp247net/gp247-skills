@@ -152,6 +152,15 @@ files; DB/config-format changes between releases are migrated in the idempotent
 stored inside the template folder (both `app/…` and `public/…` copies are deleted and replaced on
 update).
 
+**Secret settings must be encrypted at rest** (gp247/core ≥ 3.0.3). A template rarely needs a credential,
+but if you add a template option that holds one — a third-party analytics/map/chat API key or token —
+never store it as a plain option. If it lives on the template's admin config screen (`ConfigForm`),
+declare it as `password` in `fieldTypes()`: core masks it, flags the row secret and **encrypts it at
+rest** automatically; read it back with `gp247_config(...)`. Public keys that are meant to appear in the
+page's HTML (e.g. a Google Maps *browser* key) are **not** secrets — keep those as ordinary options.
+Never print a secret into a Blade view or a log. Details and the "own table" case are in
+`references/file-templates.md` and gp247-docs `system/data-encryption.md`.
+
 ## Output format
 
 Do not print a document. Apply the edits, then give a short English summary in this shape (mark each
@@ -221,7 +230,7 @@ Summary marks front look + config + the single shop override done, other shop pa
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-08-23` |
+| Lần cuối cập nhật / Last updated | `2026-09-04` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-template.md |
