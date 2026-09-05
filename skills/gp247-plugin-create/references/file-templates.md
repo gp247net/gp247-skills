@@ -90,6 +90,45 @@ public function uninstallExtension()
 > If the plugin's uninstall must keep data unless the site owner chose "remove files", weigh that against
 > a clean teardown — but the default expectation is a symmetric create/drop.
 
+### `Schema::create/drop` vs. Laravel migration files — and the `migrations`-ledger trap
+
+**Recommended: manage the plugin's own schema with `Schema` directly in `ExtensionModel`, as above** (this
+is what the `News` plugin does — `NewsContent::install()`/`uninstall()`). It is **re-entrant by design**:
+`installExtension()` runs on every install and recreates the table, so uninstall → reinstall always
+rebuilds it, and the plugin owns no global state.
+
+You *may* instead provision tables with **Laravel migration files** under `DB/migrations/`, run via
+`Artisan::call('migrate', ['--path' => 'app/GP247/Plugins/<Name>/DB/migrations', '--force' => true])` in
+`install()` — useful when the schema evolves across many versions and you want ordered, timestamped,
+individually-tracked migrations. **But it carries a trap:** Laravel records each migration in the *shared*
+`migrations` ledger and **never re-runs a migration already listed there**. If `uninstall()` drops the
+table but leaves the ledger row, the next install reports *"Nothing to migrate"* and the table is **not**
+recreated — every screen reading it then fails with `SQLSTATE[42S02] ... table doesn't exist`
+(this has happened in production).
+
+If you choose migration files, you **must**:
+
+1. **Clean the plugin's own rows from the `migrations` ledger on uninstall**, and reconcile before
+   `migrate` in `install()`/`update()` so an already-broken site self-heals via `gp247:update`:
+   ```php
+   // In uninstall() after dropping the table(s); and in install()/update() before migrate():
+   $names = array_map(
+       fn ($p) => pathinfo($p, PATHINFO_FILENAME),
+       glob(base_path('app/GP247/Plugins/<Name>/DB/migrations/*.php')) ?: []
+   );
+   if ($names) {
+       \Illuminate\Support\Facades\DB::table('migrations')->whereIn('migration', $names)->delete();
+   }
+   ```
+   Match by the plugin's own **file names** (read from `DB/migrations`) — never a loose `LIKE '%…%'`.
+2. Keep **every** migration `up()` guarded with `Schema::hasTable()` so re-running is a safe no-op for
+   tables that still exist and only recreates the missing ones (this is what makes reconcile safe).
+
+This ledger-clean pattern is used by the `InOut` plugin (`cleanMigrationRecords()`). **When in doubt, prefer
+the `Schema`-in-`ExtensionModel` approach** — there is no ledger to reconcile. (`MultiStorePro` originally
+used migration files, hit exactly this trap in production, and was moved to the `Schema`-in-`ExtensionModel`
+pattern to remove the ledger dependency entirely — a good illustration of why it is the default.)
+
 ---
 
 ## 3. Update-safe config helpers (step 5) — the most important pattern

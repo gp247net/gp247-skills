@@ -89,7 +89,13 @@ Do the steps in order. Steps 1–3 and 8 always run. Steps 4–7 depend on the a
 4. **(If it has its own table) `Models/ExtensionModel.php`.** Put the `Schema::create(...)` in
    `installExtension()` (guarded by `Schema::hasTable`) and the `Schema::dropIfExists(...)` in
    `uninstallExtension()`, so install/uninstall are symmetric and leave no orphan table. Template in
-   `references/file-templates.md`.
+   `references/file-templates.md`. **Prefer this direct-`Schema` pattern — it is re-entrant** (install
+   recreates the table every time, so uninstall → reinstall always rebuilds it). If you instead use
+   **Laravel migration files** (`DB/migrations/` + `Artisan::call('migrate', ['--path' => …])`), you MUST
+   clean the plugin's own rows from the shared `migrations` ledger on `uninstall()` (and reconcile before
+   `migrate` on install/update) and keep every `up()` `Schema::hasTable()`-guarded — otherwise a reinstall
+   reports "Nothing to migrate" and the dropped table is never recreated, causing a `42S02` fatal (this has
+   happened in production). See the "migration ledger" callout in `references/file-templates.md`.
 
 5. **(If it has site-owner-editable settings) wire the update-safe config — the core rule.** Because
    step 2's release overwrite wipes `config.php`, that file holds **defaults only**; every editable
@@ -186,6 +192,7 @@ CRUD screen over the table; if a later v1.1 adds a column, migrate it idempotent
 | jQuery / AdminLTE / select2 on the admin screen | 2.0 does not load jQuery. Use Livewire/Alpine + `<x-gp247::*>` + flatpickr. |
 | Hardcoding display text | Breaks i18n. Use `trans('Plugins/<Name>::lang.key')` and fill both vi + en lang files. |
 | `install()` creates data but `uninstall()` leaves it | Orphan tables/config after removal. Make the two symmetric. |
+| Provisioning tables with Laravel **migration files** (`DB/migrations/` + `Artisan::call('migrate')`) without cleaning the ledger on uninstall | The shared `migrations` ledger keeps the row after uninstall drops the table, so reinstall runs nothing and the table stays missing → `42S02` fatal. **Prefer the `Schema::create/drop` pattern (re-entrant, like the `News` plugin).** If you must use migration files, clean the plugin's own rows from `migrations` on uninstall + reconcile on install/update, and guard every `up()` with `Schema::hasTable()`. |
 | Storing uploads inside the plugin folder | The folder is deleted and replaced on update. Store user files under a shared `public/GP247/…` area or `storage/`. |
 | Changing DB schema in a new release with no `update()` hook | Old installs break on update. Migrate idempotently in `AppConfig::update($fromVersion)`, guarded by `version_compare`. |
 | Guessing the business logic | Out of scope and likely wrong. Ask the four Input questions when the spec is unclear. |
@@ -205,7 +212,7 @@ CRUD screen over the table; if a later v1.1 adds a column, migrate it idempotent
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-09-04` |
+| Lần cuối cập nhật / Last updated | `2026-09-05` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-plugin.md |
