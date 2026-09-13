@@ -111,15 +111,23 @@ Do the steps in order. Steps 1–3, 5, and 8 always run. Steps 4, 6, 7 depend on
    Publish the shop's default storefront views as a reference, then copy **only** the requested pages
    into your template at the exact same sub-path, and edit them there:
 
-   ```bash
-   php artisan vendor:publish --tag=gp247:shop-view-front
+   Read the shop defaults straight from the package — they are what actually renders, and no publish is
+   needed to look at them:
+
+   ```
+   vendor/gp247/shop/src/Views/templates/GP247Front/     # screen/shop_*, account/, auth/, blocks/, common/, livewire/, partials/
+   vendor/gp247/front/src/Views/templates/GP247Front/    # layout, screen/home, common/, gp247_components/
    ```
 
-   This copies the shop defaults into `app/GP247/Templates/GP247Front` (the command's fixed
-   destination). Copy the wanted page(s) — e.g.
-   `GP247Front/screen/shop_product_list.blade.php` → `<Name>/screen/shop_product_list.blade.php` — and
-   restyle inside `<Name>`. `gp247/shop` then prefers your version for the pages you copied and keeps its
-   default for everything else. Do **not** copy the whole set. The override path table is in
+   Copy the wanted page(s) — e.g.
+   `vendor/gp247/shop/src/Views/templates/GP247Front/screen/shop_product_list.blade.php` →
+   `app/GP247/Templates/<Name>/screen/shop_product_list.blade.php` — and restyle inside `<Name>`.
+   (`php artisan gp247:template-publish GP247Front --file=<path>` does the same copy into `GP247Front`
+   when the user wants to restyle the default template itself rather than a new one.) `gp247/shop` then prefers your version for the pages you copied and keeps its
+   default for everything else. Do **not** copy the whole set — and never dump the whole tree with
+   `vendor:publish --tag=gp247:shop-view-front` / `--tag=gp247:front-view`: since 2026-09-14 a template's
+   Blade is served from the packages, so every file copied into `app/` **stops receiving updates** from
+   `composer update` for good. The override path table is in
    `references/file-templates.md`. If the user wants no shop customization, skip this step entirely — the
    site still sells normally on the shop defaults.
 
@@ -230,7 +238,7 @@ Summary marks front look + config + the single shop override done, other shop pa
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-09-04` |
+| Lần cuối cập nhật / Last updated | `2026-09-14` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-template.md |

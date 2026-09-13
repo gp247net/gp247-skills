@@ -149,22 +149,29 @@ resolves the view through `gp247_shop_process_view()`:
    (file `app/GP247/Templates/<Name>/screen/shop_product_list.blade.php`).
 2. If the template has that file → it is used (the template "overrode" the shop view).
 3. If not → it falls back to the shop default `gp247-shop-front::screen.shop_product_list`
-   (`vendor/gp247/shop/src/Views/front/screen/shop_product_list.blade.php`).
+   (`vendor/gp247/shop/src/Views/templates/GP247Front/screen/shop_product_list.blade.php`).
 
 So a template with no shop page still runs the shop normally. Override a page **only** to change its
-look. Publish the shop defaults as a reference, then copy **only** the wanted pages:
-
-```bash
-php artisan vendor:publish --tag=gp247:shop-view-front
-```
-
-This copies all shop front views into `app/GP247/Templates/GP247Front` (the command's fixed
-destination). Copy the page you want, keeping the sub-path, e.g.:
+look. The defaults live in the packages and need no publishing to read:
 
 ```
-Copy:  app/GP247/Templates/GP247Front/screen/shop_product_list.blade.php
+vendor/gp247/shop/src/Views/templates/GP247Front/    # screen/shop_*, account/, auth/, blocks/, common/, livewire/, partials/
+vendor/gp247/front/src/Views/templates/GP247Front/   # layout, screen/home, common/, gp247_components/
+```
+
+Copy the page you want, keeping the sub-path, e.g.:
+
+```
+Copy:  vendor/gp247/shop/src/Views/templates/GP247Front/screen/shop_product_list.blade.php
 To:    app/GP247/Templates/<Name>/screen/shop_product_list.blade.php
 ```
+
+> Never dump the whole tree (`vendor:publish --tag=gp247:shop-view-front` / `--tag=gp247:front-view`).
+> Since 2026-09-14 the default template is served straight from the packages; any file copied into
+> `app/GP247/Templates/GP247Front` shadows the package permanently and stops receiving `composer update`
+> fixes. To restyle the default template itself, take one file at a time with
+> `php artisan gp247:template-publish GP247Front --file=<path>`; `gp247:template-prune GP247Front --dry-run`
+> lists copies that can be handed back.
 
 Overridable shop pages (place under the template's `screen/`):
 
