@@ -42,7 +42,11 @@ Pick exactly one source per key:
 Whatever the source, `ext-install` only **checks** the `gp247.json` prerequisites — it never runs
 `composer require` for `requireComposerPackages` and never installs `requireGp247Extensions`. Install
 those first (a Pro edition after its Free edition, in its own command). An installed plugin is enabled
-straight away; a template still has to be activated.
+straight away; a template still has to be activated for a store in admin → **System management →
+Website information** (the **Template** field, with a confirmation because switching deletes the old
+template's home-page layout blocks and banners). There is **no** CLI command for that step:
+`ext-enable --type=template` only enables the config row, and `gp247:template-setup` only applies the
+default template (`GP247_TEMPLATE_FRONT_DEFAULT`) to the root store — tell the user to finish in admin.
 
 ## Uninstall matrix (`ext-uninstall`)
 
