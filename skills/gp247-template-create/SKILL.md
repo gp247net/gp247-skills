@@ -148,10 +148,25 @@ Do the steps in order. Steps 1–3, 5, and 8 always run. Steps 4, 6, 7 depend on
    the template's `public/` (see ADR-014 conventions). If Node/network is unavailable, say so and flag
    the classes as unverified rather than claiming the look is done.
 
-8. **Verify.** Run `php artisan optimize:clear` to load the new routes/views/config, then tell the user
-   to install the template from admin → **Templates**, activate it for the store, and open the home page
-   (and, if `gp247/shop` is present, a product/cart page — overridden ones show the new look, others show
-   the default). Check phone (responsive) and dark mode if supported.
+8. **Verify.** Run `php artisan optimize:clear` to load the new routes/views/config, then:
+   - **Install** — with the user's OK (it writes the DB), install from the command line. The folder is
+     already on disk, so this is an **in-place** install: nothing is downloaded and no API License is
+     needed. Confirm it shows as installed:
+
+     ```bash
+     php artisan gp247:ext-install --type=template --key=<Name>
+     php artisan gp247:ext-list --type=template --json
+     ```
+
+     The admin alternative is **Templates** → **Install**. To ship the theme to another site, zip the
+     folder and install it there with `gp247:ext-install --type=template --file=<Name>.zip`.
+   - **Activate** — tell the user to do it in admin → **System management → Website information**,
+     **Template** field, then confirm. It is per store, and there is **no CLI command** for it. Warn that
+     switching template deletes the old template's home-page layout blocks and banners and seeds sample
+     data, so try it on a development site. Never switch a store's template yourself.
+   - **Check** — open the home page (and, if `gp247/shop` is present, a product/cart page — overridden
+     ones show the new look, others show the default). Check phone (responsive) and dark mode if
+     supported.
 
 **Update-safety invariants** (hold across every step; details in `references/file-templates.md`):
 `version` only ever increases and `configKey` never changes; editable settings live in the DB, not in
@@ -183,7 +198,8 @@ Created template <Name> (v2, update-safe):
 - [ ] Shop overrides: <copied screen/shop_cart only / skipped — using gp247/shop fallback defaults>
 - [ ] Tailwind rebuild: <rebuilt / not needed — reused existing classes / UNVERIFIED — no Node>
 - [x] Lang: vi + en strings added
-Next step: run `php artisan optimize:clear`, then install + activate from admin → Templates and test.
+- [ ] Installed: <php artisan gp247:ext-install --type=template --key=<Name> / skipped — user will install>
+Next step: activate it in admin → System management → Website information (Template field) on a dev site, then test.
 ```
 
 ## Examples
@@ -202,9 +218,10 @@ Summary marks the shop-overrides step skipped with that reason.
 Input: "Create a template ModaSkin; I want a custom cart page and an admin-set accent color." →
 Confirm: only `shop_cart` is restyled; accent color is an editable setting. Scaffold; wire
 `ModaSkin_effective_config()` / `ModaSkin_save_config()` with default `{accent:'#4f46e5'}` in
-`config.php`; build the front shell reading the accent from the effective config; `vendor:publish
---tag=gp247:shop-view-front` then copy **only** `screen/shop_cart.blade.php` into `ModaSkin` and restyle
-it; leave every other shop page on the default. Rebuild CSS if the accent introduced new classes.
+`config.php`; build the front shell reading the accent from the effective config; copy **only**
+`vendor/gp247/shop/src/Views/templates/GP247Front/screen/shop_cart.blade.php` to
+`app/GP247/Templates/ModaSkin/screen/shop_cart.blade.php` and restyle it (no `vendor:publish` — dumping the
+whole tree freezes it against package updates); leave every other shop page on the default. Rebuild CSS if the accent introduced new classes.
 Summary marks front look + config + the single shop override done, other shop pages on fallback.
 
 ## Common mistakes
@@ -223,6 +240,8 @@ Summary marks front look + config + the single shop override done, other shop pa
 | Overriding a shop page at the wrong sub-path/name | Fallback matches by exact sub-path; a wrong name means the default is used and your file is ignored. |
 | Storing uploads inside the template folder | The folder is deleted and replaced on update. Store user files under a shared area or `storage/`. |
 | Forgetting `php artisan optimize:clear` | Storefront shows stale routes/views/config — the #1 support issue after building. |
+| Telling the user to click "Activate" in the Templates list | There is no such button. A template is activated per store in admin → System management → Website information (Template field, with a confirmation). |
+| Trying to activate with `ext-enable --type=template` or `gp247:template-setup` | Neither assigns the template to a store: `ext-enable` only enables the config row, `template-setup` only applies the default template to the root store. Activation is always done in admin. |
 
 ## Bundled resources
 
@@ -238,7 +257,7 @@ Summary marks front look + config + the single shop override done, other shop pa
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-09-14` |
+| Lần cuối cập nhật / Last updated | `2026-09-26` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-template.md |

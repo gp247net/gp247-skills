@@ -15,7 +15,7 @@ buộc, và Block thông tin skill với mốc thời gian cập nhật.
 | --- | --- | --- |
 | [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | Dựng và xây mới một plugin GP247 v2 (Core 2.0 / TailAdmin), an toàn khi update. | 2026-09-04 |
 | [gp247-plugin-v1-to-v2](./skills/gp247-plugin-v1-to-v2/SKILL.md) | Nâng cấp plugin GP247 có sẵn từ Core 1.x lên Core 2.0. | 2026-07-29 |
-| [gp247-template-create](./skills/gp247-template-create/SKILL.md) | Dựng và xây mới một template (giao diện storefront) GP247 v2, an toàn khi update. | 2026-09-04 |
+| [gp247-template-create](./skills/gp247-template-create/SKILL.md) | Dựng và xây mới một template (giao diện storefront) GP247 v2, an toàn khi update. | 2026-09-26 |
 | [gp247-extension-lifecycle](./skills/gp247-extension-lifecycle/SKILL.md) | Cài đặt, bật/tắt, nâng cấp, gỡ bỏ plugin & template GP247 có sẵn qua CLI (`gp247:ext-*`). | 2026-09-26 |
 
 ---
