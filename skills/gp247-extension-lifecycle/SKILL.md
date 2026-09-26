@@ -1,6 +1,6 @@
 ---
 name: gp247-extension-lifecycle
-description: Installs, enables, disables, upgrades, and uninstalls existing GP247 / S-Cart extensions — both plugins and templates — from the command line using the standardized `gp247:ext-*` command family, and reports each result. Always use this skill when the user wants to manage the lifecycle of an already-built extension: install a plugin from a `.zip`, an extracted folder, or a marketplace key; enable or disable it; update one or all to a new release; uninstall or purge it; set a paid license; or list / check what is installed and what has updates — for example "cài plugin News", "gỡ plugin X", "nâng cấp tất cả extension", "bật/tắt template", "cập nhật license plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese, so do not wait for an exact English keyword match. Do not use this skill to CREATE or scaffold a NEW plugin (use gp247-plugin-create) or a new template (use gp247-template-create), to convert a 1.x plugin to v2 (use gp247-plugin-v1-to-v2), or to update the GP247 platform packages (core/front/shop) themselves after `composer update` — that is `gp247:update`, documented in gp247-docs `system/update-gp247`.
+description: Installs, enables, disables, upgrades, and uninstalls existing GP247 / S-Cart extensions — both plugins and templates — from the command line using the standardized `gp247:ext-*` command family, and reports each result. Always use this skill when the user wants to manage the lifecycle of an already-built extension: install a plugin from a `.zip`, an extracted folder, or a marketplace key; enable or disable it; update one or all to a new release; uninstall or purge it; register the site's API license to connect the GP247 library; set a paid license; or list / check what is installed and what has updates — for example "cài plugin News", "gỡ plugin X", "nâng cấp tất cả extension", "bật/tắt template", "cập nhật license plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese, so do not wait for an exact English keyword match. Do not use this skill to CREATE or scaffold a NEW plugin (use gp247-plugin-create) or a new template (use gp247-template-create), to convert a 1.x plugin to v2 (use gp247-plugin-v1-to-v2), or to update the GP247 platform packages (core/front/shop) themselves after `composer update` — that is `gp247:update`, documented in gp247-docs `system/update-gp247`.
 ---
 
 # gp247-extension-lifecycle — Install, upgrade & remove GP247 extensions from the CLI
@@ -8,7 +8,7 @@ description: Installs, enables, disables, upgrades, and uninstalls existing GP24
 ## Purpose
 
 Drive the full lifecycle of an **already-built** GP247 extension (a plugin or a template) using the
-standardized `gp247:ext-*` command family added in core 2.1 — install, enable, disable, update,
+standardized `gp247:ext-*` command family added in core 2.1 (current standard: core 3.x) — install, enable, disable, update,
 uninstall/purge, license, and inspect. The CLI runs the **same** underlying engine
 (`ExtensionInstaller` / `LibraryClient`) as the admin UI, so behavior is identical to clicking the
 admin buttons, but scriptable and usable on servers with no admin access.
@@ -48,7 +48,8 @@ ask only for the ones that are genuinely missing, do not re-ask what the user al
    (`--file=`), an extracted **folder** (`--dir=`), or a marketplace **key** (`--key=`).
 4. **Paid?** — for a paid marketplace install, you also need `--paid` and a `--license=<key>`. Treat the
    license value as a **secret**: never echo it back, never write it to a doc or commit. It is stored in
-   `admin_config`, never in `.env`.
+   `admin_config`, never in `.env`. Do not confuse it with the site's free **API License**
+   (`GP247_API_LICENSE` in `.env`), which **every** library download needs — see Workflow step 2.
 
 Run every command from the **website root** (where `artisan` lives). If the user did not say `plugin`
 vs `template`, and the key is ambiguous, ask; otherwise default to `plugin`.
@@ -62,6 +63,8 @@ check the **exit code** (0 = success) on every run.
 1. **Confirm the plan in one line.** Restate operation + type + target key(s). For a **destructive**
    operation (`ext-uninstall`, `ext-uninstall --purge`, or a paid `ext-install`), state the impact and
    get an explicit "yes" before running — deleting files / spending a paid license is not reversible.
+   Also confirm before `ext-register-license`: it writes `.env` and binds the license to the domain in
+   `APP_URL`.
 
 2. **Check current state first** with a read-only command (no marketplace call, safe to run anytime):
 
@@ -75,12 +78,28 @@ check the **exit code** (0 = success) on every run.
    enabling something not installed, etc.). For updates, also run
    `php artisan gp247:ext-check-update --type=plugin` (add `--force` to bypass the cache and re-query).
 
+   **Library connection** — needed only when a command must reach the GP247 library: `ext-install --key`
+   for an extension that is **not on disk**, `ext-update`, `ext-search`, `ext-check-update --force`.
+   Check that `.env` has a non-empty `GP247_API_LICENSE` and that `APP_URL` is the site's **real
+   domain** (not `http://localhost`). If the license is missing, register it once (after confirming,
+   step 1):
+
+   ```bash
+   php artisan gp247:ext-register-license
+   ```
+
+   If `.env` is not writable the command exits non-zero (`env_write_failed`) and prints the key for the
+   user to paste into `.env` — do not repeat the key in your report. Also check the target's
+   `gp247.json` prerequisites: `ext-install` only **checks** `requireComposerPackages` (run
+   `composer require` first) and `requireGp247Extensions` (install those extensions first).
+
 3. **Run the operation.** Pick the command from the matrix below; full options and every failure code
    are in `references/command-matrix.md` — open it when you need a flag you don't have memorized.
 
    | Operation | Command | Notes |
    | --- | --- | --- |
    | List local | `gp247:ext-list --type=<t>` | Cache-only, no API call. |
+   | Register API License | `gp247:ext-register-license` | Once per site, before any library download. Needs the real `APP_URL`. Core 2.1.1+. |
    | Search marketplace | `gp247:ext-search --type=<t> --keyword=<kw> [--free] [--page=N]` | Browse the catalog. |
    | Install from zip | `gp247:ext-install --type=<t> --file=<path.zip>` | Offline, no marketplace. |
    | Install from folder | `gp247:ext-install --type=<t> --dir=<folder>` | Already-extracted source. |
@@ -143,8 +162,9 @@ The user may phrase the request in Vietnamese, Japanese, or English; you always 
 Input: "Cài plugin News." → Operation=install, type=plugin, key=`News`, not paid. Run
 `gp247:ext-list --type=plugin --json` to confirm `News` is on disk but not installed, then
 `php artisan gp247:ext-install --type=plugin --key=News`. Because its files are already bundled on disk,
-this is a **local** install (same as the admin "Install" button), no marketplace call. Report installed
-version + active state; suggest `gp247:ext-enable --type=plugin --key=News` if it is not auto-enabled.
+this is a **local** install (same as the admin "Install" button), no marketplace call and no API License
+needed. The install enables the plugin (its `AppConfig::install()` writes the ON value), so no
+`ext-enable` is needed. Report installed version + active state.
 
 **Example 2 — update everything, then remove one plugin**
 Input: "Nâng cấp tất cả plugin rồi gỡ hẳn plugin OldBanner." → First
@@ -154,6 +174,15 @@ the destructive intent, then `php artisan gp247:ext-uninstall --type=plugin --ke
 config **and** files). If `OldBanner` turns out to be on disk but not installed, plain uninstall is
 refused — use `--purge` to delete the leftover files. Report per item; note the cache was rebuilt at the
 end of the batch.
+
+**Example 3 — fresh site, free + Pro plugin from the library**
+Input: "Cài MultiVendor và MultiVendorPro từ thư viện cho site mới." → Neither is on disk, so both are
+downloaded. Check `GP247_API_LICENSE`/`APP_URL`; if the license is missing, confirm and run
+`php artisan gp247:ext-register-license`. MultiVendorPro declares `requireGp247Extensions: ["MultiVendor"]`
+and is paid, so run **two commands**, Free first:
+`php artisan gp247:ext-install --type=plugin --key=MultiVendor`, then (after confirming the paid install)
+`php artisan gp247:ext-install --type=plugin --key=MultiVendorPro --paid --license=<L>` — never both keys
+with `--paid` in one command. Report both items without echoing `<L>`.
 
 ## Common mistakes
 
@@ -166,6 +195,9 @@ end of the batch.
 | Combining `--only-data` and `--purge` | Mutually exclusive — the command refuses. Pick one: keep files (`--only-data`) or delete files-only (`--purge`). |
 | `--paid` with several `--key` values | Refused up front (`paid_multi_not_allowed`) — one `--license` would hit the wrong plugin. Install paid items one key at a time. |
 | Forgetting `--type=template` for templates | Defaults to `plugin`; the command then can't find the template key. Always pass `--type` for templates. |
+| Downloading by `--key` before the site has an API License | Fails with `Marketplace error: …` (`api_license_required` / `domain_not_authorized`) plus a hint. Run `gp247:ext-register-license` once, then retry. |
+| Registering the API License while `APP_URL` is `http://localhost` | The license binds the wrong domain; every later library call is refused. Set the real domain in `.env` first. |
+| Expecting `ext-install` to install composer packages or required extensions | It only checks `requireComposerPackages` / `requireGp247Extensions`. `composer require` / install the dependency first. |
 | Echoing / committing a paid `--license` | It is a secret (stored in `admin_config`, never `.env`). Never print it back or write it into a doc/commit. |
 | Expecting stale admin menus to refresh by themselves after a single op | A batch rebuilds cache once at the end; after a single enable/disable/update run `gp247:cache-rebuild`. |
 | Using this skill to run `gp247:update` (platform) | That updates core/front/shop, not an extension. Different command, different skill/doc. |
@@ -184,7 +216,7 @@ end of the batch.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-08-24` |
+| Lần cuối cập nhật / Last updated | `2026-09-26` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/system/command-line-reference.md |

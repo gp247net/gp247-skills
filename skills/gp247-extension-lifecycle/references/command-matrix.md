@@ -20,6 +20,7 @@ Always check the **process exit code** too: `0` = success, non-zero = at least o
 | `gp247:ext-update` | `--type`, `--key`, `--all` | Apply marketplace updates for one extension (`--key`) or every one with an update (`--all`). Backup + rollback per item. |
 | `gp247:ext-check-update` | `--type`, `--force` | Report available updates. Cached unless `--force` re-queries the marketplace. Read-only. |
 | `gp247:ext-search` | `--type`, `--keyword=`, `--free`, `--page=` | Browse / search the marketplace catalog. |
+| `gp247:ext-register-license` | (none) | (core 2.1.1+) Register the domain in `APP_URL` for the site's free **API License** with the GP247 library and write it to `GP247_API_LICENSE` in `.env` (same as the admin "Click here"). Needed before any library call (`ext-install --key` download, `ext-update`, `ext-search`). `.env` not writable → exits non-zero (`env_write_failed`) and prints the key to paste. |
 | `gp247:ext-license` | `--type`, `--key`, `--license=`, `--delete` | Set / show / remove the per-plugin license of a paid extension. Stored in `admin_config`, **never** in `.env`. Treat the license value as a secret. |
 
 ## Install source decision (`ext-install`)
@@ -36,6 +37,12 @@ Pick exactly one source per key:
   2. **Files on disk but not installed** (e.g. a bundled plugin like `News`) → installed **locally**,
      exactly like the admin "Install" button. No marketplace call.
   3. **Neither** → **fetched from the marketplace**. For a paid item add `--paid --license=<L>`.
+     Requires the site's API License (`gp247:ext-register-license`, once, with the real `APP_URL`).
+
+Whatever the source, `ext-install` only **checks** the `gp247.json` prerequisites — it never runs
+`composer require` for `requireComposerPackages` and never installs `requireGp247Extensions`. Install
+those first (a Pro edition after its Free edition, in its own command). An installed plugin is enabled
+straight away; a template still has to be activated.
 
 ## Uninstall matrix (`ext-uninstall`)
 
@@ -69,6 +76,11 @@ Pick exactly one source per key:
 | --- | --- | --- |
 | already exists | `ext-install` on an already-installed key | Use `ext-update` to refresh, or `ext-uninstall` then `ext-install` to reinstall. |
 | not installed | `ext-enable`/`ext-disable`/`ext-uninstall` on a key with no `admin_config` row | Install it first; for on-disk-only leftovers use `ext-uninstall --purge`. |
+| `Marketplace error: …` (+ register-license hint) | Library call refused: `api_license_required` / `domain_not_authorized` (no API License, or one bound to another domain) | Set the real `APP_URL`, run `gp247:ext-register-license`, retry. |
+| "is paid — pass --paid --license=..." | The key exists in the library but is a paid item | Retry that key alone with `--paid --license=<L>`. |
+| "not found in the marketplace" | The key is not in the library listing for this type | Check the key (= `configKey`, case-sensitive) and `--type`; or install from `--file`/`--dir`. |
+| `env_write_failed` | `ext-register-license` could not write `.env` | Paste the printed `GP247_API_LICENSE=…` line into `.env` yourself; keep it secret. |
+| compatibility error | `requireCore` / `requireComposerPackages` / `requireGp247Extensions` not met | `composer require` the package or install the required extension first, then retry. |
 | `paid_multi_not_allowed` | `--paid` with more than one `--key` | Install paid items one key at a time, each with its own `--license`. |
 | protected / in-use / default template | Guard blocked the operation | Cannot proceed from CLI or admin; change the active/default template first, or the item is intentionally protected. |
 | (mutually exclusive flags) | `--only-data` and `--purge` together | Pick one: keep files (`--only-data`) or delete files-only (`--purge`). |
