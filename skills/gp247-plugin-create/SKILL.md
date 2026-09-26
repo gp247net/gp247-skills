@@ -120,9 +120,28 @@ Do the steps in order. Steps 1–3 and 8 always run. Steps 4–7 depend on the a
    `Views/Front.blade.php`; keep `Seo.php` and register it only if the page should contribute URLs to
    `sitemap.xml`. For an admin-only plugin, remove `Seo.php` and `FrontController.php`.
 
-8. **Verify.** Run `php artisan optimize:clear` to load the new routes/views/config, then tell the user
-   to install the plugin from admin → **Plugins**, and to test install → enable/disable → open the admin
-   screen → uninstall (confirming no leftover table/config). Check light and dark mode.
+8. **Verify.** Run `php artisan optimize:clear` to load the new routes/views/config, then — with the
+   user's OK, because these commands write the DB — install and exercise the lifecycle from the command
+   line. The folder is already on disk, so the install is **in place**: nothing is downloaded and no API
+   License is needed. The scaffold's `install()` writes the ON value, so the plugin is **enabled** right
+   after install (no `ext-enable` needed):
+
+   ```bash
+   php artisan gp247:ext-install   --type=plugin --key=<Name>
+   php artisan gp247:ext-list      --type=plugin --json            # installed + active
+   php artisan gp247:ext-disable   --type=plugin --key=<Name>
+   php artisan gp247:ext-enable    --type=plugin --key=<Name>
+   php artisan gp247:ext-uninstall --type=plugin --key=<Name> --only-data   # KEEP the source files
+   php artisan gp247:ext-install   --type=plugin --key=<Name>      # reinstall: converge() must rebuild everything
+   ```
+
+   **Always pass `--only-data` when uninstalling the plugin you are building** — a plain `ext-uninstall`
+   of an installed extension also **deletes its source folder**, i.e. the code you just wrote. After the
+   uninstall, confirm no leftover table/config; after the reinstall, confirm tables, menus, permissions
+   and language rows are all back. Open the admin screen and check light and dark mode. If the user
+   prefers the admin, the same flow is **Plugins** → Install / Disable / Enable / "Only remove data". To ship
+   the plugin to another site, zip the folder and install it there with
+   `gp247:ext-install --type=plugin --file=<Name>.zip`.
 
 **Update-safety invariants** (hold across every step; details in `references/file-templates.md`):
 `version` only ever increases and `configKey` never changes; editable settings live in the DB, not in
@@ -159,7 +178,8 @@ Created plugin <Name> (v2, update-safe):
 - [x] Admin screen: Livewire AdminLivewire + livewire.blade.php (<what it does>)
 - [ ] Front page: <FrontController + Seo / skipped — admin-only>
 - [x] Lang: vi + en strings added
-Next step: run `php artisan optimize:clear`, then install from admin → Plugins and test install/uninstall.
+- [ ] Installed / lifecycle tested: <ext-install → disable → enable → uninstall --only-data → reinstall OK / skipped — user will test>
+Next step: open the plugin's admin screen and test it; ship to other sites with `gp247:ext-install --type=plugin --file=<Name>.zip`.
 ```
 
 ## Examples
@@ -197,6 +217,8 @@ CRUD screen over the table; if a later v1.1 adds a column, migrate it idempotent
 | Changing DB schema in a new release with no `update()` hook | Old installs break on update. Migrate idempotently in `AppConfig::update($fromVersion)`, guarded by `version_compare`. |
 | Guessing the business logic | Out of scope and likely wrong. Ask the four Input questions when the spec is unclear. |
 | Forgetting `php artisan optimize:clear` | Admin shows stale routes/views/config — the #1 support issue after building. |
+| Testing uninstall with a plain `gp247:ext-uninstall` on the plugin you are building | On an installed extension it removes the DB config **and deletes the source folder** — the code you just wrote is gone. Always use `--only-data` while developing (admin: "Only remove data", not "Remove"). |
+| Running `gp247:ext-enable` right after `ext-install` | Redundant: the scaffold's `install()` already writes the ON value. Use `ext-enable` only after an `ext-disable`. |
 
 ## Bundled resources
 
@@ -212,7 +234,7 @@ CRUD screen over the table; if a later v1.1 adds a column, migrate it idempotent
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-09-05` |
+| Lần cuối cập nhật / Last updated | `2026-09-26` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-plugin.md |
