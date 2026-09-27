@@ -22,6 +22,7 @@ Always check the **process exit code** too: `0` = success, non-zero = at least o
 | `gp247:ext-search` | `--type`, `--keyword=`, `--free`, `--page=` | Browse / search the marketplace catalog. |
 | `gp247:ext-register-license` | (none) | (core 2.1.1+) Register the domain in `APP_URL` for the site's free **API License** with the GP247 library and write it to `GP247_API_LICENSE` in `.env` (same as the admin "Click here"). Needed before any library call (`ext-install --key` download, `ext-update`, `ext-search`). `.env` not writable → exits non-zero (`env_write_failed`) and prints the key to paste. |
 | `gp247:ext-license` | `--type`, `--key`, `--license=`, `--delete` | Set / show / remove the per-plugin license of a paid extension. Stored in `admin_config`, **never** in `.env`. Treat the license value as a secret. |
+| `gp247:ext-publish` | `--type`, `--key`, `--all` | Copy the `public/` folder (CSS/JS/images) of an **installed** extension to `public/GP247/<Plugins\|Templates>/<Key>/` again, overwriting. `--all` = every installed extension with a `public/` folder. Not installed → error. The repair for `gp247:doctor` → `extension_assets` (a folder install before the 2026-09-27 update never copied `public/`; every install path copies it now). |
 
 ## Install source decision (`ext-install`)
 

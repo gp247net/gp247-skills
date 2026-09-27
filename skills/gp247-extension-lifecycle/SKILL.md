@@ -103,7 +103,7 @@ check the **exit code** (0 = success) on every run.
    | Search marketplace | `gp247:ext-search --type=<t> --keyword=<kw> [--free] [--page=N]` | Browse the catalog. |
    | Install from zip | `gp247:ext-install --type=<t> --file=<path.zip>` | Offline, no marketplace. |
    | Install from folder | `gp247:ext-install --type=<t> --dir=<folder>` | Already-extracted source. |
-   | Install by key | `gp247:ext-install --type=<t> --key=<K>` | Bundled-on-disk → local install; else fetch from marketplace. |
+   | Install by key | `gp247:ext-install --type=<t> --key=<K>` | Bundled-on-disk → local install (also copies its `public/` to `public/GP247/...`); else fetch from marketplace. |
    | Install paid by key | `gp247:ext-install --type=<t> --key=<K> --paid --license=<L>` | **One key at a time** (see rule below). |
    | Enable | `gp247:ext-enable --type=<t> --key=<K>` | Refused if not installed. |
    | Disable | `gp247:ext-disable --type=<t> --key=<K>` | Refused if not installed, or a template still in use. |
@@ -111,6 +111,7 @@ check the **exit code** (0 = success) on every run.
    | Uninstall | `gp247:ext-uninstall --type=<t> --key=<K>` | Removes DB config **and** files. `--only-data` keeps files. |
    | Purge on-disk-only | `gp247:ext-uninstall --type=<t> --key=<K> --purge` | For a not-installed-but-on-disk item; deletes files only. |
    | License | `gp247:ext-license --type=<t> --key=<K> [--license=<L>] [--delete]` | Set / show / remove a paid license. |
+   | Re-publish static files | `gp247:ext-publish --type=<t> --key=<K>` / `--all` | Copy an installed extension's `public/` (CSS/JS/images) to `public/GP247/...` again. Use when `gp247:doctor` reports `extension_assets` (sites that installed from a folder before the 2026-09-27 update). |
 
 4. **Batch, when the user names several items.** `ext-install`, `ext-enable`, `ext-disable`, and
    `ext-uninstall` accept **multiple keys** — repeat the flag (`--key=A --key=B`) or comma-separate
@@ -216,7 +217,7 @@ with `--paid` in one command. Report both items without echoing `<L>`.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-09-26` |
+| Lần cuối cập nhật / Last updated | `2026-09-27` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/system/command-line-reference.md |
