@@ -108,6 +108,7 @@ check the **exit code** (0 = success) on every run.
    | Enable | `gp247:ext-enable --type=<t> --key=<K>` | Refused if not installed. |
    | Disable | `gp247:ext-disable --type=<t> --key=<K>` | Refused if not installed, or a template still in use. |
    | Update one / all | `gp247:ext-update --type=<t> --key=<K>` / `--all` | Marketplace update, backup + rollback. |
+   | Apply data update after `git pull` / composer / manual copy | `gp247:ext-update --local --type=<t> --key=<K>` / `--all` (`--dry-run` to preview) | Downloads nothing; runs `AppConfig::update($installedVersion)` of installed extensions whose `gp247.json` is newer than the version core recorded, then records the new version. Also run by `gp247:update`; admin has an **Apply data update** button. Exit ≠ 0 if any hook fails. Core update of 2026-09-29+. |
    | Uninstall | `gp247:ext-uninstall --type=<t> --key=<K>` | Removes DB config **and** files. `--only-data` keeps files. |
    | Purge on-disk-only | `gp247:ext-uninstall --type=<t> --key=<K> --purge` | For a not-installed-but-on-disk item; deletes files only. |
    | License | `gp247:ext-license --type=<t> --key=<K> [--license=<L>] [--delete]` | Set / show / remove a paid license. |
@@ -217,7 +218,7 @@ with `--paid` in one command. Report both items without echoing `<L>`.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-09-27` |
+| Lần cuối cập nhật / Last updated | `2026-09-29` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/system/command-line-reference.md |

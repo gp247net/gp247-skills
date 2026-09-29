@@ -257,7 +257,7 @@ Summary marks front look + config + the single shop override done, other shop pa
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-09-26` |
+| Lần cuối cập nhật / Last updated | `2026-09-29` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/master/extension/create-template.md |

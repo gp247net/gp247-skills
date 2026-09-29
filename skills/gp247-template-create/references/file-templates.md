@@ -216,7 +216,8 @@ when a new release **changes the config format or stored data**. Guard each step
 public function update(?string $fromVersion = null)
 {
     // Example: releases >= 1.1 renamed the stored config key "color" -> "accent".
-    if ($fromVersion !== null && version_compare($fromVersion, '1.1', '<')) {
+    // null = unknown previous version (files updated by git/composer before core recorded versions)
+    if ($fromVersion === null || version_compare($fromVersion, '1.1', '<')) {
         $row = \GP247\Core\Models\AdminConfig::where('group', 'Templates')
             ->where('key', '<Name>_config')->first();
         if ($row) {

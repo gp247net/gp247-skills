@@ -218,7 +218,8 @@ each step with `version_compare($fromVersion, ...)` and make it safe to run more
 public function update(?string $fromVersion = null)
 {
     // Example: releases >= 1.1 need a "sort" column on <table>.
-    if ($fromVersion !== null && version_compare($fromVersion, '1.1', '<')) {
+    // null = unknown previous version (files updated by git/composer before core recorded versions)
+    if ($fromVersion === null || version_compare($fromVersion, '1.1', '<')) {
         if (\Illuminate\Support\Facades\Schema::hasTable('<table>')
             && !\Illuminate\Support\Facades\Schema::hasColumn('<table>', 'sort')) {
             \Illuminate\Support\Facades\Schema::table('<table>', function ($table) {
@@ -234,6 +235,10 @@ public function update(?string $fromVersion = null)
 - Returning `['error' => 1, ...]` or throwing makes the system **roll back** to the backed-up old
   version — fail loudly when a migration is unsafe rather than leaving data half-migrated.
 - Never migrate destructively without a guard: running the hook twice must not error or lose data.
+- `$fromVersion` may be `null` (core update of 2026-09-29+: the hook also runs after `git pull` / composer /
+  manual copy through `gp247:update` or `gp247:ext-update --local`, and a site without a recorded version gets
+  one `null` call). Do not skip on `null`; the state guards above make it safe. That path has **no** file
+  rollback — a failure only keeps the old recorded version so the site owner can retry.
 
 ---
 
