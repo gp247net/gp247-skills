@@ -1,20 +1,23 @@
 ---
 name: gp247-plugin-v1-to-v2
-description: Upgrades an existing GP247 plugin written for gp247/core 1.x so it runs on gp247/core 2.0, editing the plugin's config, admin view, route, and AppConfig files in place and optionally adding the Livewire, SEO sitemap, and LayoutBlock page-type scaffolding. Always use this skill when the user asks to upgrade, convert, migrate, or port a GP247 plugin to v2 / core 2.0 / TailAdmin, or reports that an old plugin breaks on 2.0 (e.g. "View [gp247-core::layout] not found"). Trigger on Vietnamese, Japanese, or English phrasing of this intent (e.g. "upgrade plugin to v2", "convert plugin gp247 to core 2.0", "migrate plugin v1 to v2") — requests often arrive in Vietnamese or Japanese, so do not wait for an exact English keyword match. Do not use this skill to scaffold a brand-new v2 plugin from scratch (use `php artisan gp247:make-plugin`) or to upgrade gp247/core, front, or shop themselves.
+description: Upgrades an existing GP247 plugin written for gp247/core 1.x (AdminLTE + jQuery) to the v2 plugin format (TailAdmin + Livewire) so it installs and runs on whatever newer gp247/core the site has — it probes the installation for the actual core version and features instead of assuming one — editing the plugin's gp247.json, admin view, route, and AppConfig files in place, making its settings and data update-safe, and optionally adding the Livewire, SEO sitemap, LayoutBlock page-type, storefront block, and checkout total-method scaffolding. Always use this skill when the user asks to upgrade, convert, migrate, or port a GP247 plugin to v2 / core 2.x / core 3.x / TailAdmin, or reports that an old plugin breaks or is refused on a newer core (e.g. "View [gp247-core::layout] not found", "not compatible"). Trigger on Vietnamese, Japanese, or English phrasing of this intent (e.g. "upgrade plugin to v2", "convert plugin gp247 lên core mới", "migrate plugin v1 to v2") — requests often arrive in Vietnamese or Japanese, so do not wait for an exact English keyword match. Do not use this skill to scaffold a brand-new plugin from scratch (use gp247-plugin-create) or to upgrade gp247/core, front, or shop themselves.
 ---
 
-# gp247-plugin-v1-to-v2 — Upgrade a GP247 plugin from Core 1.x to Core 2.0
+# gp247-plugin-v1-to-v2 — Upgrade a GP247 plugin from Core 1.x to the v2 plugin format
 
 ## Purpose
 
-GP247 2.0 replaced the entire admin UI layer: 1.x used AdminLTE (Bootstrap + jQuery + pjax),
-2.0 uses TailAdmin (Tailwind + Alpine + Livewire). The old `gp247-core::layout` was removed and
-jQuery is no longer loaded, so a 1.x plugin **breaks as-is** on 2.0.
+gp247/core 2.0 replaced the entire admin UI layer: 1.x used AdminLTE (Bootstrap + jQuery + pjax); from 2.0
+on the admin shell is TailAdmin (Tailwind + Alpine + Livewire). The old `gp247-core::layout` was removed
+and jQuery is no longer loaded, so a 1.x plugin **breaks as-is**. Core also refuses to install a plugin
+whose `requireCore` does not cover the running version.
 
-This skill performs that upgrade on an existing plugin folder: it rewrites the UI layer and a few
-config files while leaving the plugin's business logic (Models, install/uninstall, data processing)
-untouched. It replaces the manual, error-prone edits described in
-`gp247-docs/extension/convert-plugin-v1-to-v2.md`.
+This skill upgrades an existing plugin folder: it rewrites the UI layer and the manifest, makes the
+plugin's settings and data survive updates, and leaves the business logic alone. It replaces the manual,
+error-prone edits described in `gp247-docs/extension/convert-plugin-v1-to-v2.md`.
+
+"1.x" (the source) is a fixed historical format. The **target** is whatever core the site runs — the
+skill never writes a target version from memory: step 0 reads it from the site.
 
 ## Output language
 
@@ -26,13 +29,14 @@ natural-language document — never translate code identifiers, blade directives
 
 ## When NOT to use
 
-- Creating a brand-new v2 plugin from nothing — run `php artisan gp247:make-plugin --name=X --download=0`
-  instead; it scaffolds the full v2 structure (Livewire, Seo, new layout) already.
+- Creating a brand-new plugin from nothing — use `gp247-plugin-create` (it scaffolds the full current
+  structure with `gp247:make-plugin`).
 - Upgrading gp247/core, gp247/front, or gp247/shop themselves — this skill only touches a **plugin**
   folder under `app/GP247/Plugins/<Extension_Key>/` (or an equivalent standalone plugin package).
-- A plugin already on the v2 template (`requireCore` already `["2.1"]`, dependency keys already
-  `requireComposerPackages`/`requireGp247Extensions`, and layout already
-  `gp247-admin::layouts.admin`) — report that no upgrade is needed instead of editing.
+- A plugin already in the v2 format: admin view on `gp247-admin::layouts.admin`, dependency keys already
+  `requireComposerPackages` / `requireGp247Extensions`, and `requireCore` already covering the probe's
+  `core` (see step 2). Report that no conversion is needed; if only `requireCore` is stale, fix just that
+  and say so.
 
 ## Input
 
@@ -49,30 +53,37 @@ Read `gp247.json` first to capture two identifiers reused across the steps:
 
 ## Workflow
 
-Do the steps in order. Steps 2, 3, 7 are the **required minimum** for the plugin to run; steps 5–6 are
-recommended (only when the plugin has dynamic/jQuery interaction); steps 8 and 8b are optional (step 8
-only when the plugin serves public pages for the sitemap; step 8b only when the plugin has its own
-public storefront page that admins should be able to attach LayoutBlock blocks to). Decide which
-optional steps apply *before* editing, then tell the user.
+Do the steps in order. Steps 0–4, 8 and 13 are the **required minimum**; the rest apply only when the
+plugin has what they handle. Decide which optional steps apply *before* editing, then tell the user.
 
-1. **Safety branch.** If the plugin is under Git, create a working branch (`git checkout -b upgrade-to-v2`).
-   Otherwise ask the user to back up the folder first. This is the rollback path — do not skip it.
+0. **Probe the installation.** From the website root, run the bundled read-only probe and keep its JSON:
 
-2. **`gp247.json` (required).** Set `requireCore` to `["2.1"]`, add `"requireUpdateFrom": "1.0"`, and
-   rename the dependency keys to the core 2.1 names: `requirePackages` → `requireComposerPackages`,
-   `requireExtensions` → `requireGp247Extensions` (keep their values). Leave `version` unchanged.
-
-   ```json
-   "requireCore": ["2.1"],
-   "requireUpdateFrom": "1.0",
-   "requireComposerPackages": [],
-   "requireGp247Extensions": [],
+   ```bash
+   php <this-skill-dir>/scripts/gp247-probe.php
    ```
 
-   (Core 2.1 still reads the old keys for backward compatibility, but they are deprecated — emit the new ones.)
+   Use `core` / `require_core` for step 2, `packages.<front|shop>.db` to know whether storefront/checkout
+   steps can be tested, and `capabilities` to decide which features you may use. `bootstrapped: false`
+   with `core` still set → continue, treating capabilities as unknown; `core: null` → stop, not a GP247
+   site root. Do not take the version from composer metadata — it can disagree with the version the
+   compatibility check uses.
 
-3. **Admin view layout (required — this is what breaks the plugin).** In the admin blade view, change
-   the master layout on the first `@extends(...)` line:
+1. **Safety copy — ask first.** If the plugin folder is under Git, propose a working branch
+   (`git checkout -b upgrade-to-v2`) and **wait for the user's OK** before creating it; otherwise ask the
+   user to back up the folder. This is the rollback path — do not skip it, and do not create branches on
+   your own.
+
+2. **`gp247.json` (required).**
+   - **`requireCore` = the probe's `require_core`** (the running `major.minor`). Each entry is a range —
+     `"X.Y"` means `>= X.Y.0` and `< (X+1).0.0` — so one entry per supported major. A leftover 1.x value
+     (e.g. `["1.2"]`) or any value from another major makes core refuse the install as "not compatible".
+   - Rename the dependency keys: `requirePackages` → `requireComposerPackages`, `requireExtensions` →
+     `requireGp247Extensions` (keep their values). Core still reads the old keys but logs a deprecation.
+   - Add `"requireUpdateFrom": "1.0"`. Leave `version` as is for now (bump it when you release the
+     converted plugin — every release must be greater than the installed one).
+
+3. **Admin view layout (required — this is what breaks the plugin).** In the admin blade view, change the
+   master layout on the first `@extends(...)` line:
 
    ```blade
    {{-- before --}}  @extends('gp247-core::layout')
@@ -81,85 +92,110 @@ optional steps apply *before* editing, then tell the user.
 
    Keep the `@section('main') ... @endsection` structure; do not restructure content yet.
 
-4. **Remove jQuery / AdminLTE widgets (only if present).** GP247 2.0 does not load jQuery, so scan the
-   plugin's views and assets and replace anything depending on it:
-   - `$(...)`, `$.ajax`, `$.pjax`, any `x-pjax` header/script → Livewire/Alpine (step 5).
+4. **`AppConfig.php` messages (required).** In `enable()` **and** `disable()`, replace hardcoded strings
+   such as `'Error disable'` with
+   `gp247_language_render('admin.extension.action_error', ['action' => 'Enable'|'Disable'])`, and make
+   sure the error result is returned — a common pattern in scaffolded `enable()` methods assigns the
+   error and then overwrites it with the success result on the next line.
+
+5. **Remove jQuery / AdminLTE widgets (only if present).** The admin shell does not load jQuery, so scan
+   the plugin's views and assets:
+   - `$(...)`, `$.ajax`, `$.pjax`, any `x-pjax` header/script → Livewire/Alpine (step 6).
    - `select2`, `daterangepicker`, `datetimepicker`, Bootstrap modal → the matching `<x-gp247::*>`
-     component, or **flatpickr** (already bundled in the TailAdmin stack) for date fields.
+     component, or **flatpickr** (bundled with the admin shell) for date fields.
    - Hardcoded display text → `gp247_language_render('...')`.
 
-   If the plugin only shows static data with no jQuery, it already works after step 3 — skip steps 4–6.
+   If the plugin only shows static data with no jQuery, it already works after step 3 — skip steps 5–6.
 
-5. **(Recommended) Livewire admin screen.** When the plugin has dynamic interaction, create
-   `Livewire/AdminLivewire.php` and `Views/livewire.blade.php`. Use the exact templates in
-   `references/file-templates.md`, substituting `Extension_Key` with the plugin's `configKey`.
+6. **(Recommended for dynamic screens) Livewire admin screen + route.** Create
+   `Livewire/AdminLivewire.php` and `Views/livewire.blade.php`, register the Livewire namespace in
+   `Provider.php`, and add the `class_exists`-guarded route — templates in `references/file-templates.md`.
+   Add it beside the legacy controller route first; once the Livewire screen covers everything, point the
+   `/` route (`admin_<ExtensionUrlKey>.index`) at it and remove the legacy controller.
 
-6. **(Recommended) Livewire route.** In `Route.php`, inside the existing admin `Route::group([...],
-   function () { ... })`, **add** the Livewire route without removing the legacy controller route.
-   Guard it with `class_exists` so the plugin is safe even before the Livewire file exists:
+7. **Settings that survive updates (required when the plugin has site-owner settings).** A 1-click update
+   overwrites every plugin file. If the 1.x plugin keeps site-owner choices in `config.php`, or edits that
+   file from admin, they are wiped on every update. Move every editable value into `admin_config` — one
+   row per setting keyed `<Extension_Key>_<setting>` (seed in `install()`, top up in `update()`), or one
+   JSON row for structured settings; `config.php` keeps defaults only. A **credential** (API key, token,
+   webhook secret) must be a `password` field with `security = 1` so core encrypts it at rest (if
+   `capabilities.secret_cast`). Templates in `references/file-templates.md` §"Settings".
 
-   ```php
-   if (class_exists(\App\GP247\Plugins\Extension_Key\Livewire\AdminLivewire::class)) {
-       Route::get('/livewire', \App\GP247\Plugins\Extension_Key\Livewire\AdminLivewire::class)
-       ->name('admin_ExtensionUrlKey.livewire');
-   }
-   ```
+8. **Data hook and lifecycle (required).** Make the lifecycle re-runnable:
+   - `uninstall()` removes what `install()` created (config rows, menu, tables the plugin owns); data the
+     store keeps for its own records (orders, payments) stays.
+   - Add `update(?string $fromVersion = null)`: it adds whatever a later version introduced (setting
+     rows, columns, menu) by **checking the current state**, never skips on `null`, and is harmless to run
+     twice. Core runs it after a library update and — if `capabilities.extension_data_updater` — after
+     files changed by `git pull` / composer / copy, once with `null` on a site that has no recorded
+     version. A converted plugin lands on sites that ran the 1.x version, so this call is expected.
+   - If the plugin creates tables with **Laravel migration files**, read the ledger caveat in
+     `references/file-templates.md` §"Data hook" — a reinstall can otherwise leave a table missing.
 
-7. **`AppConfig.php` (required).** In the `disable()` method, replace the hardcoded `'Error disable'`
-   string with the multilingual helper. Leave `install`/`uninstall`/`enable`/`getInfo` unchanged.
+9. **(Optional) SEO sitemap.** Only when the plugin has a public page for `sitemap.xml`: create `Seo.php`
+   and add the `class_exists`-guarded registration block to `Provider.php`. Each returned entry needs
+   `loc` and should carry `alias`.
 
-   ```php
-   $return = ['error' => 1, 'msg' => gp247_language_render('admin.extension.action_error', ['action' => 'Disable'])];
-   ```
+10. **(Optional) LayoutBlock page-type.** Only when the plugin has its **own public storefront page**
+    and admins should be able to attach LayoutBlock blocks to it. Confirm the controller passes
+    `'layout_page' => '<token>'` to `view()`, register the token into
+    `config('gp247-config.front.layout_page')` from `Provider.php` (storing the **i18n key**, not a
+    rendered string), and add the `layout_block_page` line to both lang files. The `News` plugin is the
+    reference.
 
-8. **(Optional) SEO sitemap.** Only when the plugin has a public page for `sitemap.xml`: create
-   `Seo.php` and add the `class_exists`-guarded registration block to `Provider.php`. Templates are in
-   `references/file-templates.md`.
+11. **(Optional) Storefront content without template files.** Some 1.x plugins showed storefront content
+    by copying a view into a template folder (`app/GP247/Templates/<Template>/...`) or asking site owners
+    to edit their template. That ties the plugin to one template and is left behind on removal. Replace it
+    with a **layout block** registered in `gp247-config.front.layout_block_views` (if
+    `capabilities.front_layout_block_views`) or a renderer on a shop page's **plugin hook** in
+    `gp247-config.front.plugin_hooks` (if `capabilities.front_plugin_hooks`). Snippets in
+    `references/file-templates.md`.
 
-8b. **(Optional) LayoutBlock page-type.** Only when the plugin has its **own public storefront page**
-   (e.g. a list/detail page) and admins should be able to attach LayoutBlock blocks (banner, HTML,
-   view…) to it. The admin "Layout block" screen only lists page-types **registered** into
-   `config('gp247-config.front.layout_page')`, so the plugin must register its own. Confirm the
-   controller passes `'layout_page' => '<token>'` to `view()`, then add the `class_exists`-guarded
-   registration block to `Provider.php` (storing the **i18n key**, not a pre-rendered string) and add
-   the matching `layout_block_page` line to the plugin's `Lang/en/lang.php` and `Lang/vi/lang.php`. The
-   `<token>` must match the `$layout_page` value the controller emits. The `News` plugin
-   (`app/GP247/Plugins/News/Provider.php`) is the reference example. Templates are in
-   `references/file-templates.md`. (Note: a *template*/theme does **not** register page-types — only a
-   plugin with its own page does.)
+12. **(Optional) Total-method plugin (coupon/point) at checkout.** Only when the plugin is a total-method
+    (`configCode: "Promotion"`; legacy `"Total"` still accepted) and `capabilities.shop_checkout_total_method`.
+    The v1 jQuery `render`/`script` include is gone; make `AppConfig` implement
+    `GP247\Shop\Front\Contracts\CheckoutTotalMethod` — `checkoutApply(array $payload): array`,
+    `checkoutRemove(): void`, `checkoutView(): ?string` — and add the fragment view, using only CSS classes
+    the storefront's compiled stylesheet already contains (a new Tailwind class has no style). The
+    `ShopDiscount` plugin is the reference. Templates in `references/file-templates.md`.
 
-8c. **(Optional) Total-method plugin (coupon/point) at checkout.** Only when the plugin is a
-   total-method (`configCode: "Promotion"` — coupon, loyalty point…; legacy `"Total"` still accepted) that must show an input at checkout.
-   GP247 2.0 replaced the v1 jQuery `render`/`script` include with the **`CheckoutTotalMethod` contract**
-   (ADR-storefront-checkout-total-method-contract). Make `AppConfig` implement
-   `GP247\Shop\Front\Contracts\CheckoutTotalMethod` — `checkoutApply(array $payload): array` (validate +
-   set `session('totalMethod')[<key>]`, reusing the plugin's existing logic), `checkoutRemove(): void`,
-   and `checkoutView(): ?string` (fragment view name) — then add that fragment (e.g.
-   `Views/checkout.blade.php`) using `wire:model="totalPayload.<key>.code"` /
-   `wire:click="applyTotal('<key>')"` and **only storefront UI tokens the active template already ships**
-   (a brand-new Tailwind class won't exist in the pre-built CSS and silently has no style). The checkout
-   auto-discovers the plugin (configCode `Promotion`, legacy `Total` + implements the interface) and renders the fragment; a total
-   plugin that does not implement the interface is hidden + logged. The data layer
-   (`session('totalMethod')`, `getInfo()`, `addOrder()`) is unchanged. The `ShopDiscount` plugin is the
-   reference example. Templates are in `references/file-templates.md`.
+13. **Verify.** Run `php artisan optimize:clear`, then — with the user's OK, because these write the DB —
+    exercise the lifecycle in place:
 
-9. **Verify.** Run `php artisan optimize:clear` to reload routes/views/config, then confirm the admin
-   screen opens (and the `/livewire` path if you added it), and that enable/disable still works. If the
-   user hits an error, consult the troubleshooting table in `references/file-templates.md`.
+    ```bash
+    php artisan gp247:ext-install   --type=plugin --key=<Extension_Key>     # or ext-update --local if already installed
+    php artisan gp247:ext-disable   --type=plugin --key=<Extension_Key>
+    php artisan gp247:ext-enable    --type=plugin --key=<Extension_Key>
+    php artisan gp247:ext-uninstall --type=plugin --key=<Extension_Key> --only-data   # KEEP the source files
+    php artisan gp247:ext-install   --type=plugin --key=<Extension_Key>
+    ```
+
+    Only run commands the probe lists. **Always `--only-data`** — a plain uninstall deletes the plugin
+    folder. On a site that already had the 1.x plugin installed, run
+    `php artisan gp247:ext-update --type=plugin --key=<Extension_Key> --local --dry-run` (if
+    `capabilities.ext_update_local`) to see the data hook would apply, then without `--dry-run`. If you
+    changed the plugin's `public/` and `capabilities.ext_publish`, run
+    `php artisan gp247:ext-publish --type=plugin --key=<Extension_Key>`. Open the admin screen (and the
+    `/livewire` path if added) in light and dark mode. If the user hits an error, consult the
+    troubleshooting table in `references/file-templates.md`.
 
 ## Output format
 
 Do not print a document. Apply the edits, then give the user a short English summary in this shape:
 
 ```
-Upgraded plugin <name> to v2:
-- [x] gp247.json → requireCore ["2.1"], requireUpdateFrom "1.0", keys renamed to requireComposerPackages/requireGp247Extensions
+Upgraded plugin <name> to the v2 format on gp247/core <probe.core>:
+- [x] gp247.json → requireCore <probe.require_core>, requireUpdateFrom "1.0", keys renamed to requireComposerPackages/requireGp247Extensions
 - [x] Views/Admin.blade.php → layout gp247-admin::layouts.admin
-- [x] AppConfig.php → disable() uses gp247_language_render
+- [x] AppConfig.php → enable()/disable() use gp247_language_render and return the error
 - [ ] Livewire: <added / skipped because the plugin only shows static data>
+- [ ] Settings: <moved to admin_config (secrets encrypted) / skipped — no site-owner settings>
+- [x] Lifecycle: uninstall mirrors install; update() idempotent and null-safe
 - [ ] Seo.php: <added / skipped because the plugin has no public page>
 - [ ] LayoutBlock page-type: <added / skipped because the plugin has no public storefront page>
-- [ ] Total-method checkout: <added / skipped because the plugin is not a total-method (coupon/point)>
+- [ ] Storefront content: <layout block / plugin hook / skipped — none>
+- [ ] Total-method checkout: <added / skipped because the plugin is not a total-method>
+- [ ] Lifecycle tested: <install → disable → enable → uninstall --only-data → reinstall OK / skipped — user will test>
 Next step: run `php artisan optimize:clear`, then open the admin screen to verify.
 ```
 
@@ -170,41 +206,55 @@ Mark each line `[x]` done or `[ ]` skipped, and state *why* an optional step was
 The user may phrase the request in Vietnamese, Japanese, or English; you always respond in English.
 
 **Example 1 — static admin-only plugin**
-Input: "Upgrade the Blog plugin at app/GP247/Plugins/Blog to v2. It only shows a static list."
-Output: Edit `gp247.json` (step 2), `Views/Admin.blade.php` (step 3), `AppConfig.php` (step 7); skip
-steps 4–6 (no jQuery), step 8 (admin-only), and step 8b (no public storefront page); the summary marks
-Livewire, Seo, and LayoutBlock page-type skipped with reasons and reminds the user to run
-`php artisan optimize:clear`.
+Input: "Upgrade the Blog plugin at app/GP247/Plugins/Blog to v2. It only shows a static list." → Probe;
+ask about a branch; edit `gp247.json` (`requireCore` from the probe), `Views/Admin.blade.php`,
+`AppConfig.php` (`enable`/`disable`); confirm `uninstall()` mirrors `install()` and add a null-safe
+`update()`; skip steps 5–6 (no jQuery), 7 (no settings), 9–12. Summary marks them skipped with reasons.
 
-**Example 2 — plugin with jQuery datepicker + public storefront page**
-Input: "Convert the Booking plugin to core 2.0; it has a datepicker and a public booking page."
-Output: All required steps; replace the jQuery datepicker with flatpickr (step 4); add the Livewire
-screen + route (steps 5–6); add `Seo.php` + the `Provider.php` sitemap block (step 8); register the
-page-type so admins can attach LayoutBlock blocks to the booking page (step 8b); summary marks all boxes done.
+**Example 2 — plugin with jQuery datepicker, settings in config.php, public page**
+Input: "Convert the Booking plugin; it has a datepicker, the admin edits config.php, and there is a public
+booking page." → All required steps; flatpickr instead of the jQuery datepicker (step 5); Livewire screen
+(step 6); move the settings from `config.php` into `admin_config` rows, the payment API key as an
+encrypted `password` field (step 7); `update()` seeds the new rows on sites that ran 1.x (step 8);
+`Seo.php` (step 9); page-type registration (step 10).
+
+**Example 3 — plugin refused on the new core**
+Input: "Plugin Banner cài lên báo not compatible." → Probe says `core` 3.1; `gp247.json` has
+`"requireCore": ["2.1"]` — a 2.x range. Its layout and keys are already v2, so only set `requireCore` to
+the probe's `require_core`, explain the range rule, and check that nothing else needs the full conversion.
 
 ## Common mistakes
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
-| Skipping step 3 | Plugin throws `View [gp247-core::layout] not found`; that layout was removed in 2.0. |
-| Deleting the legacy controller route when adding Livewire | Breaks backward compatibility — keep both routes. |
+| Writing a `requireCore` value from memory or an example | Each entry is a range ending before the next major; a value from another major is refused as "not compatible". Use the probe's `require_core`. |
+| Skipping step 3 | Plugin throws `View [gp247-core::layout] not found`; that layout no longer exists. |
+| Creating a git branch without asking | Branch operations need the user's explicit OK. Propose it and wait. |
+| Fixing only `disable()` | `enable()` has the same hardcoded message and often loses its error result. Fix both. |
+| Leaving site-owner settings in `config.php` | The next 1-click update wipes them. Move them to `admin_config` (step 7). |
+| A credential stored as a plain setting | Encrypt it at rest: `password` field + `security = 1` (step 7). |
+| No `update()`, or one that returns early on `null` | Sites that ran 1.x never get the rows/columns the conversion added. Guard on the current state (step 8). |
+| Deleting the legacy controller route before the Livewire screen covers everything | The admin screen disappears. Add Livewire beside it first (step 6). |
 | Adding the Livewire route without the `class_exists` guard | Errors when the Livewire file is absent. |
+| Testing uninstall with a plain `ext-uninstall` | It deletes the plugin folder. Use `--only-data`. |
 | Forgetting `php artisan optimize:clear` | Admin still shows the old cached view/route — the #1 support issue. |
-| Translating code identifiers or `gp247_language_render` keys | Breaks the plugin — keep all identifiers and lang keys verbatim; everything you write stays in English. |
-| Registering a page-type whose token ≠ the controller's `$layout_page` | The block is selected in admin but never renders — the token in `Provider.php` must match the value `view()` emits (step 8b). |
-| Storing a pre-translated string instead of the i18n key in the page-type registry | The admin dropdown won't follow the viewer's locale — store the `::lang.layout_block_page.<token>` key, not a rendered string. |
-| For a total-method plugin, reusing the v1 jQuery `render`/`script` at checkout | 2.0 loads no jQuery and the checkout is Livewire; implement `CheckoutTotalMethod` + a `wire:` fragment instead (step 8c). |
-| Using a brand-new Tailwind class in a checkout/storefront fragment | The template's CSS is pre-compiled; unknown classes have no style — reuse tokens the template already ships (step 8c / gp247.md §3b). |
+| Translating code identifiers or `gp247_language_render` keys | Breaks the plugin — keep all identifiers and lang keys verbatim. |
+| Registering a page-type whose token ≠ the controller's `$layout_page` | The block is selected in admin but never renders (step 10). |
+| Storing a pre-translated string in the page-type registry | The admin dropdown won't follow the viewer's locale — store the language key. |
+| Keeping storefront content as files copied into a template folder | Works on one template only and is orphaned on removal. Use a layout block or plugin hook (step 11). |
+| Reusing the v1 jQuery `render`/`script` at checkout for a total-method | The checkout is Livewire with no jQuery; implement `CheckoutTotalMethod` (step 12). |
+| Using a brand-new Tailwind class in a storefront fragment | The storefront CSS is precompiled; unknown classes have no style. Reuse classes the template already ships. |
 | Editing gp247/core, front, or shop, or every plugin at once | Out of scope — confirm the single plugin path first. |
-| Raising `requireUpdateFrom` above `"1.0"` without reason | Blocks 1-click updates; keep `"1.0"` unless a major release cannot auto-migrate. |
-| Rewriting Models / install logic | Unnecessary — 2.0 keeps the 1.x schema and logic layer; only UI + config change. |
+| Raising `requireUpdateFrom` above `"1.0"` without reason | Blocks 1-click updates; keep `"1.0"` unless a release cannot migrate from older versions. |
 
 ## Bundled resources
 
-- `references/file-templates.md` — read at step 5, 6, 8, 8b, or 8c for the full `AdminLivewire.php`,
-  `livewire.blade.php`, `Seo.php`, the `Provider.php` sitemap block, and the `Provider.php` LayoutBlock
-  page-type block, plus the before/after `gp247.json` and the verification / troubleshooting Q&A. Load
-  it only when you reach those steps so SKILL.md stays lean.
+- `scripts/gp247-probe.php` — step 0. Read-only; prints one JSON object (core version, `require_core`,
+  usable packages, `gp247:*` commands, capabilities). Identical copies ship with every gp247-* skill.
+- `references/file-templates.md` — read at steps 2 and 6–12, or when verifying: before/after
+  `gp247.json`, the Livewire screen and route, settings in `admin_config`, the data hook, `Seo.php` and
+  the sitemap block, the page-type block, storefront registries, the total-method contract, and the
+  troubleshooting Q&A.
 
 ---
 
@@ -212,7 +262,7 @@ page-type so admins can attach LayoutBlock blocks to the booking page (step 8b);
 
 | Field | Value |
 | --- | --- |
-| Last updated | `2026-08-23` |
+| Lần cuối cập nhật / Last updated | `2026-10-03` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
-| source | https://github.com/gp247net/gp247-docs/blob/master/extension/convert-plugin-v1-to-v2.md |
+| source | https://github.com/gp247net/gp247-docs/blob/main/extension/convert-plugin-v1-to-v2.md |
