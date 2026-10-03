@@ -14,7 +14,6 @@ the GP247 skill standard (`247-skill`) — English throughout, a mandatory trigg
 | Skill | Summary | Last updated |
 | --- | --- | --- |
 | [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | Scaffold and build a brand-new GP247 plugin (TailAdmin + Livewire admin, including payment / shipping / coupon plugins), update-safe. | 2026-10-03 |
-| [gp247-plugin-v1-to-v2](./skills/gp247-plugin-v1-to-v2/SKILL.md) | Convert a GP247 plugin written for Core 1.x to the v2 plugin format, running on the core the site has. | 2026-10-03 |
 | [gp247-template-create](./skills/gp247-template-create/SKILL.md) | Scaffold and build a brand-new GP247 storefront template (theme), update-safe. | 2026-10-03 |
 | [gp247-extension-lifecycle](./skills/gp247-extension-lifecycle/SKILL.md) | Install, enable/disable, upgrade, apply data updates, and uninstall existing GP247 plugins & templates from the CLI (`gp247:ext-*`). | 2026-10-03 |
 
@@ -36,8 +35,8 @@ It prints one JSON object with:
 - the capabilities (features, extension points) its core/front/shop offer.
 
 The skill branches on these facts. The same skill therefore works on any core version and does not go
-stale each time core is released. The four skills carry four **identical** copies of the script so each
-skill still works when installed alone; when you change the script, change all four.
+stale each time core is released. The skills carry **identical** copies of the script so each
+skill still works when installed alone; when you change the script, change every copy.
 
 ---
 

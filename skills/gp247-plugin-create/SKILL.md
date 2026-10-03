@@ -1,6 +1,6 @@
 ---
 name: gp247-plugin-create
-description: Scaffolds a brand-new GP247 plugin in the v2 plugin format (Livewire + TailAdmin admin shell) for whatever gp247/core version the site runs — it probes the installation first instead of assuming a version — and edits the generated files in place (gp247.json, AppConfig.php, config.php, function.php, Models/ExtensionModel.php, Livewire, Route, Lang) to implement the plugin the user describes, built the update-safe way so a 1-click version update never wipes the site owner's settings or data. Always use this skill when the user asks to create, build, scaffold, generate, or start a NEW GP247 / S-Cart plugin (an admin feature package plugged into gp247/core, including payment, shipping and checkout-discount plugins), for example "make a GP247 plugin that…", "create a new plugin", "scaffold a plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese (e.g. "tạo plugin GP247", "viết plugin mới", "làm plugin cho GP247"), so do not wait for an exact English keyword match. Do not use this skill to upgrade/convert an EXISTING 1.x plugin (use gp247-plugin-v1-to-v2), to build a storefront theme/template (use gp247-template-create), or to modify gp247/core, front, or shop themselves.
+description: Scaffolds a brand-new GP247 plugin in the v2 plugin format (Livewire + TailAdmin admin shell) for whatever gp247/core version the site runs — it probes the installation first instead of assuming a version — and edits the generated files in place (gp247.json, AppConfig.php, config.php, function.php, Models/ExtensionModel.php, Livewire, Route, Lang) to implement the plugin the user describes, built the update-safe way so a 1-click version update never wipes the site owner's settings or data. Always use this skill when the user asks to create, build, scaffold, generate, or start a NEW GP247 / S-Cart plugin (an admin feature package plugged into gp247/core, including payment, shipping and checkout-discount plugins), for example "make a GP247 plugin that…", "create a new plugin", "scaffold a plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese (e.g. "tạo plugin GP247", "viết plugin mới", "làm plugin cho GP247"), so do not wait for an exact English keyword match. Do not use this skill to build a storefront theme/template (use gp247-template-create), or to modify gp247/core, front, or shop themselves.
 ---
 
 # gp247-plugin-create — Scaffold & build a new GP247 plugin (update-safe)
@@ -32,8 +32,6 @@ passed to `trans(...)` / `gp247_language_render(...)` (those keys stay verbatim;
 
 ## When NOT to use
 
-- Upgrading or converting an **existing** 1.x plugin — use `gp247-plugin-v1-to-v2`; that edits an
-  already-built plugin's UI/config layer rather than scaffolding a new one.
 - Building a **storefront theme/template** (the shop's look) — use `gp247-template-create`; a template is
   not a plugin and does not use `gp247:make-plugin`.
 - Editing `gp247/core`, `gp247/front`, or `gp247/shop` themselves — this skill only creates a folder

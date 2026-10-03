@@ -14,7 +14,6 @@ buộc, và Block thông tin skill với mốc thời gian cập nhật.
 | Skill | Mô tả ngắn | Cập nhật lần cuối |
 | --- | --- | --- |
 | [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | Dựng và xây mới một plugin GP247 (admin TailAdmin + Livewire, gồm cả plugin thanh toán / vận chuyển / mã giảm giá), an toàn khi update. | 2026-10-03 |
-| [gp247-plugin-v1-to-v2](./skills/gp247-plugin-v1-to-v2/SKILL.md) | Chuyển plugin GP247 viết cho Core 1.x sang định dạng plugin v2, chạy được trên core mà site đang dùng. | 2026-10-03 |
 | [gp247-template-create](./skills/gp247-template-create/SKILL.md) | Dựng và xây mới một template (giao diện storefront) GP247, an toàn khi update. | 2026-10-03 |
 | [gp247-extension-lifecycle](./skills/gp247-extension-lifecycle/SKILL.md) | Cài đặt, bật/tắt, nâng cấp, áp dụng cập nhật dữ liệu, gỡ bỏ plugin & template GP247 có sẵn qua CLI (`gp247:ext-*`). | 2026-10-03 |
 
@@ -36,8 +35,8 @@ Script in ra một đối tượng JSON gồm:
 - các khả năng (tính năng, điểm cắm) mà core/front/shop hiện có.
 
 Skill rẽ nhánh theo kết quả này. Nhờ vậy cùng một skill dùng được cho mọi phiên bản core, và không cũ đi
-mỗi lần core lên phiên bản. Bốn skill mang bốn bản sao **giống hệt nhau** của script, để mỗi skill vẫn
-chạy được khi cài riêng; khi sửa script, sửa cả bốn bản.
+mỗi lần core lên phiên bản. Các skill mang các bản sao **giống hệt nhau** của script, để mỗi skill vẫn
+chạy được khi cài riêng; khi sửa script, sửa mọi bản.
 
 ---
 
