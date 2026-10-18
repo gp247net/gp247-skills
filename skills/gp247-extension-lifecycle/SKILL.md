@@ -254,7 +254,7 @@ without echoing `<L>`.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-10-03` |
+| Lần cuối cập nhật / Last updated | `2026-10-18` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/system/command-line-reference.md |

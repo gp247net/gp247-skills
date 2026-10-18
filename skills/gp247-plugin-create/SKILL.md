@@ -1,6 +1,6 @@
 ---
 name: gp247-plugin-create
-description: Scaffolds a brand-new GP247 plugin in the v2 plugin format (Livewire + TailAdmin admin shell) for whatever gp247/core version the site runs — it probes the installation first instead of assuming a version — and edits the generated files in place (gp247.json, AppConfig.php, config.php, function.php, Models/ExtensionModel.php, Livewire, Route, Lang) to implement the plugin the user describes, built the update-safe way so a 1-click version update never wipes the site owner's settings or data. Always use this skill when the user asks to create, build, scaffold, generate, or start a NEW GP247 / S-Cart plugin (an admin feature package plugged into gp247/core, including payment, shipping and checkout-discount plugins), for example "make a GP247 plugin that…", "create a new plugin", "scaffold a plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese (e.g. "tạo plugin GP247", "viết plugin mới", "làm plugin cho GP247"), so do not wait for an exact English keyword match. Do not use this skill to build a storefront theme/template (use gp247-template-create), or to modify gp247/core, front, or shop themselves.
+description: Scaffolds a brand-new GP247 plugin in the v2 plugin format (Livewire + TailAdmin admin shell) for whatever gp247/core version the site runs — it probes the installation first instead of assuming a version — and edits the generated files in place (gp247.json, AppConfig.php, config.php, function.php, Models/ExtensionModel.php, Livewire, Route, Lang) to implement the plugin the user describes, built the update-safe way so a 1-click version update never wipes the site owner's settings or data. Always use this skill when the user asks to create, build, scaffold, generate, or start a NEW GP247 / S-Cart plugin (an admin feature package plugged into gp247/core, including checkout-discount / total-method plugins), for example "make a GP247 plugin that…", "create a new plugin", "scaffold a plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese (e.g. "tạo plugin GP247", "viết plugin mới", "làm plugin cho GP247"), so do not wait for an exact English keyword match. Do not use this skill for a payment plugin (use gp247-payment-plugin-create), a shipping plugin (use gp247-shipping-plugin-create), or a storefront theme/template (use gp247-template-create), or to modify gp247/core, front, or shop themselves.
 ---
 
 # gp247-plugin-create — Scaffold & build a new GP247 plugin (update-safe)
@@ -51,8 +51,9 @@ before scaffolding — **never guess the business logic**. You need four answers
    - a **public (storefront) page** of its own;
    - **content on existing storefront pages** — a block the site owner places, or output at a fixed
      spot of a shop page (see step 7);
-   - a **checkout role**: payment method, shipping method, or checkout total-method (coupon/points).
-     These have extra contracts — see `references/checkout-plugins.md`.
+   - a **checkout total-method** (coupon/points) — extra contract in `references/checkout-plugins.md`.
+     A **payment** or **shipping** plugin is out of scope here: hand over to `gp247-payment-plugin-create` /
+     `gp247-shipping-plugin-create`, which follow gp247/shop's money and shipping contracts.
 3. **Own data table?** — does it store records of its own (needs a table created on install), or does it
    only hold a handful of settings?
 4. **Site-owner-editable settings?** — any value the site owner may change from admin (toggles,
@@ -108,8 +109,8 @@ what step 0 found.
 
 3. **Fill `gp247.json`.** Set `name`, author fields, and the compatibility fields:
    - `configKey` must equal the folder name; `configGroup` is `"Plugins"`.
-   - `configCode` follows the surface: `"Payment"` for a payment method, `"Shipping"` for a shipping
-     method, `"Promotion"` for a checkout total-method, otherwise the same as `configKey`.
+   - `configCode` follows the surface: `"Promotion"` for a checkout total-method, otherwise the same as
+     `configKey` (`"Payment"` / `"Shipping"` belong to the payment and shipping skills).
    - **`requireCore` = the probe's `require_core`** (the running `major.minor`). Each entry is a range —
      `"X.Y"` means `>= X.Y.0` and `< (X+1).0.0` — so write **one entry per major** you support, never a
      list of every minor. Lower the floor only when the user wants older sites **and** you have
@@ -175,9 +176,9 @@ what step 0 found.
 
    Snippets for both registries: `references/file-templates.md` §8.
 
-8. **(If a checkout role) payment / shipping / total-method.** Follow `references/checkout-plugins.md`:
-   discovery by `configCode`, the `CheckoutTotalMethod` contract, the order-money rules for a payment
-   method, and its webhook route. Use it only when `packages.shop.db` is true.
+8. **(If a checkout total-method) coupon / points.** Follow `references/checkout-plugins.md`:
+   discovery by `configCode`, the `CheckoutTotalMethod` contract and its currency rule, and price
+   resolvers. Use it only when `packages.shop.db` is true.
 
 9. **Verify.** Run `php artisan optimize:clear`, then — with the user's OK, because these commands write
    the DB — install and exercise the lifecycle from the command line. The folder is already on disk, so
@@ -244,7 +245,7 @@ Created plugin <Name> (update-safe) on gp247/core <probe.core>:
 - [ ] Settings: <model A ConfigForm rows / model B JSON row / skipped — no editable settings>
 - [x] Admin screen: Livewire AdminLivewire at admin_<url_key>.index (<what it does>); menu <added / none>
 - [ ] Storefront: <own page + Seo / layout block / plugin hook / skipped — admin-only>
-- [ ] Checkout role: <payment / shipping / total-method / none>
+- [ ] Checkout total-method: <CheckoutTotalMethod implemented / none>
 - [x] Lang: vi + en strings added
 - [ ] Installed / lifecycle tested: <ext-install → disable → enable → uninstall --only-data → reinstall OK / skipped — user will test>
 Next step: open the plugin's admin screen and test it; ship to other sites with `gp247:ext-install --type=plugin --file=<Name>.zip`.
@@ -269,10 +270,10 @@ Confirm: admin-only, own table `product_feed`, feed rows are data (not "settings
 admin `/` route; delete `Seo.php`, its registration and `FrontController.php`; if a later v1.1 adds a
 column, add it in `update()` guarded by `Schema::hasColumn`.
 
-**Example 3 — payment method on a site whose core lacks a capability**
-Input: "Viết plugin thanh toán MoMo." → Probe: shop usable; `secret_cast` false. Tell the user the site's
-core cannot encrypt the MoMo secret key, and ask whether to raise `requireCore` to a core that can or to
-stop. Only then follow `references/checkout-plugins.md`.
+**Example 3 — a payment or shipping plugin**
+Input: "Viết plugin thanh toán MoMo." or "Tạo plugin vận chuyển cho hãng X." → Not this skill: hand over to
+`gp247-payment-plugin-create` / `gp247-shipping-plugin-create`. They scaffold the plugin the same way and
+add the checkout, ledger and carrier contracts this skill does not cover.
 
 ## Common mistakes
 
@@ -306,7 +307,8 @@ stop. Only then follow `references/checkout-plugins.md`.
 - `references/file-templates.md` — read at steps 3–7 and for the `update()` hook: `gp247.json` field
   reference, `ExtensionModel` table template and the migration-ledger trap, the two settings models,
   `update()`, the overwrite/preserve map, secrets, admin menu, storefront registries.
-- `references/checkout-plugins.md` — read at step 8 only: payment, shipping and total-method plugins.
+- `references/checkout-plugins.md` — read at step 8 only: total-method plugins and price resolvers
+  (payment and shipping have their own skills).
 
 ---
 
@@ -314,7 +316,7 @@ stop. Only then follow `references/checkout-plugins.md`.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-10-03` |
+| Lần cuối cập nhật / Last updated | `2026-10-18` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |

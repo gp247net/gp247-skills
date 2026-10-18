@@ -97,6 +97,27 @@ try {
     $configForm = 'GP247\\Core\\AdminShell\\Infrastructure\\ConfigForm';
     $shopProduct = 'GP247\\Shop\\Models\\ShopProduct';
 
+    // Capability names a shipping provider may declare, kept only when the core has the
+    // interface behind them ('cod' rides on booking shipments).
+    $shippingProvider = 'GP247\\Shop\\Shipping\\Contracts\\ShippingProvider';
+    $shippingCapabilities = [];
+    if (interface_exists($shippingProvider)) {
+        $shippingInterfaces = [
+            'rates'     => $shippingProvider,
+            'shipments' => 'GP247\\Shop\\Shipping\\Contracts\\CreatesShipments',
+            'cancel'    => 'GP247\\Shop\\Shipping\\Contracts\\CancelsShipments',
+            'documents' => 'GP247\\Shop\\Shipping\\Contracts\\ProvidesShippingDocuments',
+            'tracking'  => 'GP247\\Shop\\Shipping\\Contracts\\TracksShipments',
+            'webhook'   => 'GP247\\Shop\\Shipping\\Contracts\\HandlesShippingWebhooks',
+            'cod'       => 'GP247\\Shop\\Shipping\\Contracts\\CreatesShipments',
+        ];
+        foreach ($shippingInterfaces as $capability => $interface) {
+            if (interface_exists($interface)) {
+                $shippingCapabilities[] = $capability;
+            }
+        }
+    }
+
     $result['capabilities'] = [
         // CLI
         'ext_commands'             => isset($commands['gp247:ext-install']),
@@ -127,6 +148,18 @@ try {
         'shop_order_record_payment'  => method_exists('GP247\\Shop\\Models\\ShopOrder', 'recordPayment'),
         'shop_price_resolvers'       => class_exists($shopProduct)
             && strpos((string) file_get_contents((new ReflectionClass($shopProduct))->getFileName()), 'price_resolvers') !== false,
+        'shop_payment_refund_sources' => interface_exists('GP247\\Shop\\Payment\\Contracts\\ProvidesRefundSources'),
+        // Payment plugins whose orders are paid in cash on delivery (the shipment collects the balance).
+        'shop_cod_payment_methods'   => is_array(config('gp247-config.shop.cod_payment_methods')),
+        // Shipping (gp247/shop): the provider contract, its optional capabilities, the shared
+        // carrier webhook route and the hook that enriches parcel lines.
+        'shop_shipping_provider'     => interface_exists($shippingProvider),
+        // The contract's code can be present before the shop's data update created its tables;
+        // shipments (booking, tracking, webhook) need the tables, quoting does not.
+        'shop_shipping_tables'       => interface_exists($shippingProvider) ? $hasTable('shop_shipment') : false,
+        'shop_shipping_capabilities' => $shippingCapabilities,
+        'shop_shipping_webhook'      => Illuminate\Support\Facades\Route::has('shop.shipping.webhook'),
+        'shop_shipping_item_resolvers' => class_exists('GP247\\Shop\\Shipping\\ShippingItemFactory'),
     ];
 } catch (Throwable $e) {
     $result['bootstrap_error'] = get_class($e).': '.$e->getMessage();

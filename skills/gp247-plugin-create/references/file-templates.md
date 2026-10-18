@@ -1,6 +1,7 @@
-# file-templates — code templates for gp247-plugin-create
+# file-templates — code templates shared by the GP247 plugin skills
 
-Read this when you reach steps 3–7 of `SKILL.md`, or when writing the `update()` hook. Replace every
+Read this at the steps of `SKILL.md` that point here, or when writing the `update()` hook. The same
+file ships with every GP247 plugin skill — keep the copies identical. Replace every
 `<Name>` with the plugin's `configKey` (folder name), `<url_key>` with the snake-case URL key the
 scaffolder put in `Route.php`, and `<table>` with the table name **without** the GP247 prefix — the
 snippets add `GP247_DB_PREFIX` themselves, like every bundled plugin, so core's tools (doctor, key
@@ -9,7 +10,7 @@ English. Features marked "if `capabilities.X`" refer to the JSON printed by `scr
 
 ---
 
-## 1. `gp247.json` field reference (step 3)
+## 1. `gp247.json` field reference
 
 The scaffolder emits this shape; edit the values, not the shape:
 
@@ -36,7 +37,7 @@ The scaffolder emits this shape; edit the values, not the shape:
 | Field | Rule |
 |---|---|
 | `configKey` | Unique id; **must equal the folder name**; never change after release. |
-| `configCode` | The plugin's role. `"Payment"` / `"Shipping"` / `"Promotion"` (total-method) make checkout pick the plugin up — see `checkout-plugins.md`. Any other plugin: the same as `configKey`. |
+| `configCode` | The plugin's role. `"Payment"` / `"Shipping"` / `"Promotion"` (total-method) make checkout pick the plugin up — the skill for that role covers the rest. Any other plugin: the same as `configKey`. |
 | `configGroup` | Always `"Plugins"` for a plugin. |
 | `version` | `1.0`, `1.1`, `2.0`… **Every release must be greater** than the installed one (compared with `version_compare`) or 1-click update refuses it. |
 | `requireCore` | Core versions the plugin runs on. Each entry is a range: `"X.Y"` = `>= X.Y.0` and `< (X+1).0.0`; several entries are a union. Use the probe's `require_core` (the running `major.minor`), **one entry per supported major**. Core compares against `config('gp247.core')`, which has no patch number — so never write a patch-level floor like `"3.0.3"`: it can fail on a site that has the patch. To express "needs feature F", rely on a minor that has F. |
@@ -52,7 +53,7 @@ The scaffolder emits this shape; edit the values, not the shape:
 
 ---
 
-## 2. `Models/ExtensionModel.php` — create/drop the plugin's table (step 4)
+## 2. `Models/ExtensionModel.php` — create/drop the plugin's table
 
 Only when the plugin stores records of its own. Keep install and uninstall symmetric so removing the
 plugin leaves no orphan table.
@@ -125,7 +126,7 @@ This is the whole cost of keeping migration files. **When in doubt, prefer the
 
 ---
 
-## 3. Update-safe settings (step 5) — the most important pattern
+## 3. Update-safe settings — the most important pattern
 
 A 1-click update **overwrites every plugin file**, so `config.php` can hold **defaults only**. Any value the
 site owner edits must live in `admin_config` (the DB), which the update preserves. Choose one model.
@@ -382,7 +383,7 @@ Call it from `install()` and `update()`; in `uninstall()` run
 
 ---
 
-## 8. Storefront registries (step 7)
+## 8. Storefront registries
 
 Both go in `Provider.php`, inside the `gp247_extension_check_active(...)` block and behind
 `class_exists('GP247\Front\Controllers\RootFrontController')` so the plugin still boots without
