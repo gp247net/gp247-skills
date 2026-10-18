@@ -408,9 +408,19 @@ name unlikely to clash (prefix it with the plugin name).
 ```php
 $hooks = config('gp247-config.front.plugin_hooks', []);
 $hooks['shop_product_detail_bottom'][] = [
-    'callback' => fn (array $data) => view($extensionPath.'::hooks.product_bottom', $data)->render(),
+    'key' => '<Name>',
+    // An array callable, never a closure: config values must survive `php artisan config:cache`.
+    'callback' => [\App\GP247\Plugins\<Name>\Hooks::class, 'productBottom'],
 ];
 config(['gp247-config.front.plugin_hooks' => $hooks]);
+```
+
+```php
+// Hooks.php — returns the HTML for the hook; a throw costs only this block (logged).
+public static function productBottom(array $data): string
+{
+    return view('Plugins/<Name>::hooks.product_bottom', $data)->render();
+}
 ```
 
 **Own page in the "Page" scope of layout blocks** — uncomment the `layout_page` registration the scaffold
