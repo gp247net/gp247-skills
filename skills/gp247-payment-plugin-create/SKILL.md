@@ -100,7 +100,9 @@ Steps 0–5 and 10 always run; the others depend on the Input and the probe.
    (leave the admin segment out of `gp247-config.admin.store_scoped_segments`).
 
 5. **Checkout hand-off.** `AppConfig::getInfo()` keeps the scaffold's keys (`title`, `image`, …); add a
-   `note` key when the method shows instructions to the shopper (bank account, QR). Then
+   `note` key when the method shows instructions to the shopper (bank account, QR) — a plain-text string,
+   read per store; checkout (gp247/shop 3.1.4+) prints it escaped under the selected method and on the
+   confirm step. Amount/order number need the plugin's own page after the order. Then
    (`references/payment-contract.md` §1–2):
    - **Offline method** — no `processOrder()`: the shop completes the order directly.
    - **Gateway** — `Controllers\FrontController::processOrder()` reads `session('orderID')`, creates the

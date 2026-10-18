@@ -24,7 +24,9 @@ use GP247\Shop\Payment\Support\RefundResult;
 ## 1. How checkout finds and hands off to the plugin
 
 Checkout lists every **installed and enabled** plugin with `configCode: "Payment"` (per store when
-`storeScope` is `"store"`) and shows `AppConfig::getInfo()` (`title`, `image`, `note`…). Read settings for
+`storeScope` is `"store"`) and shows `AppConfig::getInfo()` (`title`, `image`, `note`…). `note` is optional
+plain text (never HTML): from gp247/shop 3.1.4 the default template prints it, escaped, under the method the
+shopper selected and again on the confirm step; older versions print only `title`. Read settings for
 the effective store with `gp247_config('<Name>_<setting>', gp247_plugin_store_id())`.
 
 When the shopper places the order, the shop **creates the order first**, puts its id in
