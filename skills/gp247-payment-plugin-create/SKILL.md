@@ -99,6 +99,16 @@ Steps 0–5 and 10 always run; the others depend on the Input and the probe.
    decide where the money goes: unless the user asks otherwise, do **not** let store-admins edit them
    (leave the admin segment out of `gp247-config.admin.store_scoped_segments`).
 
+   **Check before use (required).** Override `readiness()` on the same screen (when `capabilities.core_config_form_readiness`) and
+   merge the shop's payment conditions with the gateway's own:
+   `array_merge(PaymentSettings::readiness($this->readinessStoreId(), '<Name>'), $own)` (class `GP247\Shop\Payment\PaymentSettings`,
+   when `capabilities.shop_payment_readiness`). The shop part covers: the payment step switched on at checkout (`payment_enabled`)
+   and this plugin enabled for the store being checked (`provider_enabled`) — do not re-implement them. Without that capability
+   (older gp247/shop) compute the same two checks yourself, under the same keys. Add the gateway's own: the credentials of the
+   **active** mode (sandbox or live) filled, at least one shop currency the gateway accepts, the webhook URL not on a local domain
+   (`localhost`, `*.local`, `*.test`, private IP — a warning), the order status set after payment still exists. Local settings
+   only — verify the keys against the gateway on save. Template: `references/file-templates.md` §3A.
+
 5. **Checkout hand-off.** `AppConfig::getInfo()` keeps the scaffold's keys (`title`, `image`, …); add a
    `note` key when the method shows instructions to the shopper (bank account, QR) — a plain-text string,
    read per store; checkout (gp247/shop 3.1.4+) prints it escaped under the selected method and on the
@@ -160,6 +170,7 @@ Created payment plugin <Name> on gp247/core <probe.core>:
 - [x] Probed: shop usable; ledger <yes/no>, changeStatus <yes/no>, payment gateway registry <yes/no>, secrets <encrypted/NOT available>
 - [x] Scaffolded + gp247.json → configCode Payment, storeScope <store/global>, requireCore <probe.require_core>
 - [x] Settings: <keys>; secrets: <keys> (encrypted, sandbox + live)
+- [x] Check before use: shop conditions (PaymentSettings::readiness) + readiness() lists <gateway conditions>
 - [x] Checkout: <offline / processOrder → hosted page / embedded>; return + cancel routes
 - [x] Money: recordPayment keyed by <provider txn id>; amount + currency checked; changeStatus → <status>
 - [ ] Webhook: <route, signature scheme — or skipped, why>
@@ -190,6 +201,7 @@ with `PaymentRequestService::recordMovement()`, mirror provider-side refunds via
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
+| A settings screen that does not say what is still missing | The owner enables the plugin, nothing happens, and they must hunt for the cause on other screens. Implement `readiness()` with every local condition the plugin needs, each with the reason and a link to where to fix it (`references/file-templates.md` §3A). |
 | `$order->update(['status' => …, 'payment_status' => …, 'received' => …])` | Skips stock, history and events; `received` is derived from the ledger and is overwritten. Use `recordPayment()` + `changeStatus()`. |
 | Trusting the return URL's query string | Anyone can type it. Read the payment back from the provider (or wait for the verified webhook). |
 | Recording the order total instead of what the provider took | Hides a mismatch. Record the provider's amount; add a note and report when it differs. |

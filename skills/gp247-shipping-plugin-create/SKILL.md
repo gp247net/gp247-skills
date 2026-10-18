@@ -101,6 +101,15 @@ Steps 0–4 and 10 always run; the others depend on the Input and on the probe.
    settings **for the store of the request** — `gp247_config('<Name>_<setting>', $request->storeId)` —
    never from the session.
 
+   **Check before use (required).** On the same screen override `readiness()` and merge the shop's shipping conditions with the
+   carrier's own: `array_merge(ShippingSettings::readiness($this->readinessStoreId(), '<Name>'), $own)` (class
+   `GP247\Shop\Shipping\ShippingSettings`, when `capabilities.shop_shipping_readiness`). The shop part covers: shipping switched on,
+   province and ward/district fields on customer addresses, the pick-up warehouse, and this carrier enabled for the store. Add the
+   carrier's own: credentials filled, the carrier's currency present and enabled in the shop, the webhook URL not on a local domain
+   (`localhost`, `*.local`, `*.test`, private IP — a warning). Turn the shop's `origin` item into a warning only when the carrier can
+   fall back to an address stored on its side. Local settings only — test the credentials against the carrier on save. Template:
+   `references/file-templates.md` §3A.
+
 5. **The driver — quoting (required).** Create `Services/<Name>Provider.php` implementing
    `GP247\Shop\Shipping\Contracts\ShippingProvider` and its one required method `rates()`; contract,
    value objects and rules in `references/shipping-contract.md` §2–4. Return one `ShippingRate` per
@@ -161,6 +170,7 @@ Created shipping plugin <Name> on gp247/core <probe.core> (shop shipping contrac
 - [x] Probed: shop usable; shipping capabilities offered by the shop: <list>
 - [x] Scaffolded + gp247.json → configCode Shipping, storeScope <store/global>, requireCore <probe.require_core>
 - [x] Settings: <keys>; secrets: <keys> (encrypted)
+- [x] Check before use: shop conditions (ShippingSettings::readiness) + <carrier conditions>
 - [x] Quoting: <n> service(s) in <currency>; refusals returned as RateResult errors, outages thrown; HTTP timeout <s>
 - [ ] Shipments: <shipments / cancel / documents / tracking / cod — or skipped, why>
 - [ ] Webhook: <verification method — or skipped, why>
@@ -190,6 +200,7 @@ what the carrier offers; webhook secret generated on install and shown as part o
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
+| A settings screen that does not say what is still missing | The owner enables the plugin, nothing happens, and they must hunt for the cause on other screens. Implement `readiness()` with every local condition the plugin needs, each with the reason and a link to where to fix it (`references/file-templates.md` §3A). |
 | Converting the carrier price to the display currency in the plugin | The shop converts carrier → base → display once; a second conversion doubles it. Return `Money` in the carrier's currency. |
 | Throwing from `rates()` on a normal failure | Return `RateResult::error()` for an expected refusal (address, not configured). Reserve exceptions for an outage: the shop logs them and pauses that carrier for a minute. |
 | No HTTP timeout on the quote call | A slow carrier stalls the checkout step for every new cart or address. Keep the timeout short (a few seconds). |

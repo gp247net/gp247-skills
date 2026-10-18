@@ -153,6 +153,13 @@ what step 0 found.
    - **Menu:** if the screen needs a sidebar entry, add an `admin_menu` row in `install()` (skip if it
      already exists, so it is safe to repeat), call the same helper from `update()`, and delete it in
      `uninstall()` — template in `references/file-templates.md` §7.
+   - **Check before use (required on a settings screen).** In the `ConfigForm` screen override `readiness()` (when
+     `capabilities.core_config_form_readiness`) and return `GP247\Core\AdminShell\Infrastructure\ReadinessCheck` items for every
+     *local* condition the plugin needs: required keys/credentials filled, dependent packages/extensions installed **in the
+     database** (not just present in `vendor/`), the plugin enabled for the store being checked (`$this->readinessStoreId()`), and
+     anything the owner must set elsewhere in GP247. Each item gives the reason and links to where to fix it. Never call a remote API
+     here — check credentials on save. Template: `references/file-templates.md` §3A. Older core: show the same conditions in a
+     section `hint`.
    - Prefer the shared `<x-gp247::*>` components over raw HTML. **No jQuery / AdminLTE / select2** —
      the admin shell does not load jQuery; use Livewire/Alpine (and flatpickr for dates). Render every
      string via `trans('Plugins/<Name>::lang.key')` or `gp247_language_render(...)`; add the values to
@@ -244,6 +251,7 @@ Created plugin <Name> (update-safe) on gp247/core <probe.core>:
 - [ ] ExtensionModel table: <created `<table>` / skipped — no own table>
 - [ ] Settings: <model A ConfigForm rows / model B JSON row / skipped — no editable settings>
 - [x] Admin screen: Livewire AdminLivewire at admin_<url_key>.index (<what it does>); menu <added / none>
+- [x] Check before use: readiness() lists <conditions> / skipped — no settings screen
 - [ ] Storefront: <own page + Seo / layout block / plugin hook / skipped — admin-only>
 - [ ] Checkout total-method: <CheckoutTotalMethod implemented / none>
 - [x] Lang: vi + en strings added
@@ -283,6 +291,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 | Listing every minor in `requireCore` (`["3.0","3.1"]`) | Redundant — `"3.0"` already covers all of 3.x. One entry per supported major. |
 | Taking the core version from composer | Composer metadata can disagree with `config('gp247.core')`, which is what the compatibility check uses. Use the probe. |
 | Letting the site owner edit `config.php` | 1-click update overwrites the file → their choices vanish. Editable values must live in `admin_config` (step 5). |
+| A settings screen that does not say what is still missing | The owner enables the plugin, nothing happens, and they must hunt for the cause on other screens. Implement `readiness()` with every local condition the plugin needs, each with the reason and a link to where to fix it (`references/file-templates.md` §3A). |
 | Seeding a setting only in `config.php` and expecting it on the settings screen | `ConfigForm` shows `admin_config` rows only. Insert the row in `install()` and top it up in `update()`. |
 | Unprefixed setting keys (`api_secret`) | `gp247_config()` looks keys up across plugins; another plugin's key can collide. Always `<Name>_<setting>`. |
 | A `ConfigForm` without `keys()` | It would list every row of the `Plugins` group. Return this plugin's keys. |

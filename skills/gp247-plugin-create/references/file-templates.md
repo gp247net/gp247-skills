@@ -218,6 +218,57 @@ Optional, when the probe has them: `fieldOptions()` for `select` fields, `fieldH
 `return [['id' => 'live', 'title' => trans(...), 'hint' => trans(...), 'keys' => ['<Name>_api_secret']]];`.
 `StripePayment/Livewire/AdminLivewire.php` uses all three.
 
+#### Check before use — `readiness()` (required on every settings screen)
+
+When `capabilities.core_config_form_readiness`, the screen shows a **Check before use** box above the settings, built from
+`readiness()`. List every **local** condition the plugin needs to work, so an owner whose plugin "is enabled but does nothing"
+sees the cause on the screen they are already on — instead of hunting through other screens.
+
+```php
+use GP247\Core\AdminShell\Infrastructure\ReadinessCheck;
+use GP247\Core\Models\AdminConfig;
+
+protected function readiness(): array
+{
+    $store = $this->readinessStoreId(); // the store being edited; the root store for the shared scope
+    $t = static fn (string $key): string => (string) trans('Plugins/<Name>::lang.' . $key);
+
+    return [
+        ReadinessCheck::failIf($this->saved('<Name>_api_secret', $store) === '', 'api_secret',
+            $t('ready_secret_missing'), ReadinessCheck::ERROR, '', '', $t('ready_secret_ok')),
+        // A dependency counts when its database part is installed, not when its code sits in vendor/.
+        ReadinessCheck::failIf(!(function_exists('gp247_shop_installed') && gp247_shop_installed()), 'shop',
+            $t('ready_shop_missing'), ReadinessCheck::ERROR, gp247_route_admin('admin_plugin.index'), $t('fix_plugins'), $t('ready_shop_ok')),
+    ];
+}
+
+// Read your own keys fresh: gp247_config() caches for the request, so right after Save it returns the old value.
+private function saved(string $key, string $store): string
+{
+    $global = (string) GP247_STORE_ID_GLOBAL;
+    foreach (array_unique([$store, $global]) as $scope) {
+        $row = AdminConfig::where('group', 'Plugins')->where('key', $key)->where('store_id', $scope)->first();
+        if ($row !== null && trim((string) $row->value) !== '') {
+            return trim((string) $row->value);
+        }
+    }
+
+    return '';
+}
+```
+
+Rules:
+- `error` = the plugin cannot work; `warning` = it works partly (say what is lost); passed checks are listed under "Already in place".
+- One item per condition, with a sentence a site owner understands and — when the fix is on another screen — `fixUrl` + `fixLabel`
+  (the path, e.g. "Shop configuration → Customer"). Add the strings to both `Lang/vi` and `Lang/en`.
+- **Local settings only.** Never call a remote API here (the page must load fast and work offline); check credentials against the
+  provider in `save()` instead.
+- Shipping plugins start from the shop's conditions: `ShippingSettings::readiness($store, '<Name>')` (see the shipping skill).
+- Payment plugins start from the shop's conditions: `PaymentSettings::readiness($store, '<Name>')` — payment step on, plugin on for
+  the store (see the payment skill).
+- Older core (`core_config_form_readiness` is false): put the same conditions, as plain sentences, in the `hint` of the first
+  `sections()` block.
+
 Read a setting anywhere with `gp247_config('<Name>_enabled')` (add `gp247_plugin_store_id()` as the second
 argument when `storeScope` is `"store"`).
 

@@ -135,6 +135,8 @@ try {
         'config_form_field_hints'  => method_exists($configForm, 'fieldHints'),
         'config_form_store_scoped' => method_exists($configForm, 'storeScoped'),
         'config_form_write_only_secrets' => method_exists($configForm, 'secretStateOf'),
+        // The "Check before use" box: ConfigForm::readiness() returning ReadinessCheck items.
+        'core_config_form_readiness' => class_exists('GP247\\Core\\AdminShell\\Infrastructure\\ReadinessCheck') && method_exists($configForm, 'readiness'),
         // Storefront (gp247/front)
         'front_plugin_hooks'       => function_exists('gp247_render_plugin_hook'),
         'front_layout_block_views' => is_array(config('gp247-config.front.layout_block_views')),
@@ -158,6 +160,10 @@ try {
         // shipments (booking, tracking, webhook) need the tables, quoting does not.
         'shop_shipping_tables'       => interface_exists($shippingProvider) ? $hasTable('shop_shipment') : false,
         'shop_shipping_capabilities' => $shippingCapabilities,
+        // The shop's shipping conditions a carrier plugin shows on its settings screen.
+        'shop_shipping_readiness'    => method_exists('GP247\\Shop\\Shipping\\ShippingSettings', 'readiness'),
+        // The shop's payment conditions a payment plugin shows on its settings screen.
+        'shop_payment_readiness'     => method_exists('GP247\\Shop\\Payment\\PaymentSettings', 'readiness'),
         'shop_shipping_webhook'      => Illuminate\Support\Facades\Route::has('shop.shipping.webhook'),
         'shop_shipping_item_resolvers' => class_exists('GP247\\Shop\\Shipping\\ShippingItemFactory'),
     ];
