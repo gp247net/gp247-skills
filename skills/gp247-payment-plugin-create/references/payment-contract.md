@@ -172,6 +172,18 @@ Credentials come from **`$request->store_id`** (and in webhooks from the order's
 `store_id`), never from the session. A method for a capability you did
 not declare may throw `UnsupportedCapabilityException`.
 
+Optional, since gp247/shop 3.5.1 — the order status of an order placed through the REST API, which
+pays through a payment request (purpose `order.checkout`):
+
+| Method | Contract |
+|---|---|
+| `orderStatusAfter(string $event, string $storeId): ?int` | `$event` is `'paid'` (paid in full) or `'refunded'` (fully refunded). Return the order status your website payment step sets (your `order_status_success` / `order_status_refunded` setting for `$storeId`, the request's store), or `null` to leave the status. Implement `GP247\Shop\Payment\Contracts\OrderStatusAfterPayment`, or declare the method without `implements` if the plugin must still load on an older shop. |
+
+Your **return page** for a payment request must accept the requests this domain serves:
+`PaymentRequestService::servingStoreId((string) $request->store_id) === (string) config('app.storeId')`
+(shop 3.5.1+; a marketplace vendor store has no domain and is served by ROOT — compare the store ids
+directly on an older shop). Read the provider session with the key of the request's own store.
+
 Money of a payment request is recorded through the shop's service, not the order ledger:
 
 ```php
@@ -230,4 +242,6 @@ with a test secret. Cover at least:
 - A retry after a failure between recording and the status change still moves a `NEW` order.
 - Settings read for the right store (two stores, two accounts); no credential in logs or responses.
 - If built: `PaymentGateway` `availableFor()` false without credentials; `collect()` returns the redirect;
-  `refund()` returns the provider id; webhook money of a payment request goes to `recordMovement()`.
+  `refund()` returns the provider id; webhook money of a payment request goes to `recordMovement()`;
+  `orderStatusAfter('paid' | 'refunded', $storeId)` returns your status settings for that store; the return
+  page records a request of a store without its own domain when opened on the ROOT domain.
