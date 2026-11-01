@@ -80,3 +80,28 @@ Record after the change:
 To get the shop's own events (`order.*`, `stock.changed`, `product.*`, `customer.*`) for what the plugin changes, save
 through gp247/shop's models (Eloquent `save()` / `update()` / `delete()`) or its methods (for example
 `ShopOrder::changeStatus()`). Raw SQL or a bare query-builder `update()` on shop tables is not seen — the ERP will miss it.
+
+## 5. Fields, includes, caching and deprecation (core 3.8.0+)
+
+Check first: `class_exists('GP247\\Core\\Api\\V2\\ApiShape')` — `false` means the site's core predates these.
+
+- **ETag / 304** comes for free on every successful v2 `GET` registered through `GP247_API_MIDDLEWARE`; nothing to add.
+- **`fields[<type>]` / `include`:** declare an `ApiShape` for the endpoint and pass the resolved choice to `ApiQuery`:
+
+  ```php
+  $shape = (new \GP247\Core\Api\V2\ApiShape('<name_lower>_item', ['name' => ['descriptions'], 'price', 'status'], [
+      'brand' => ['with' => ['brand' => fn ($q) => $q->where('status', 1)],
+                  'render' => fn ($row) => $row->brand ? ['id' => $row->brand->id, 'name' => $row->brand->name] : null,
+                  'type' => 'brand', 'fields' => ['id', 'name']],
+  ]))->resolve($request);                                   // 422 on an unknown type, field or include
+  $query = Item::query()->with($shape->with(['descriptions']));   // drops relations only unchosen fields read
+  return \GP247\Core\Api\V2\ApiQuery::page($query, $request, $toArray, [], [], null, false, $shape);
+  ```
+
+  `$toArray` must not read the relation of a field that was not chosen (build costly values with
+  `ApiShapeSelection::build($shape, ['field' => fn () => …])`). Included records follow the same visibility rules as when
+  read on their own; one level only, at most 3 per request.
+- **`api.cache.public`** only on public routes that never carry one person's data (catalog, content) — never on carts,
+  accounts, orders or admin routes.
+- **`api.deprecated:<deprecated-on>,<sunset-on>,<guide anchor>`** on a route you plan to remove; give at least 12 months and
+  2 minor releases of notice.

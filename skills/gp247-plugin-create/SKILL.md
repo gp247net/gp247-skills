@@ -191,7 +191,9 @@ what step 0 found.
    for an ERP/CRM, records sync events of its own, or changes orders/stock/products/customers: follow
    `references/api-and-events.md` (`api.admin:<route>,write` + `throttle:gp247-api-write` +
    `api.idempotent[:optional]`; event types merged into `gp247-config.api.events` and recorded with
-   `ApiEvents::record()`; save shop data through gp247/shop's models so the shop's events fire).
+   `ApiEvents::record()`; save shop data through gp247/shop's models so the shop's events fire; `ApiShape` for
+   `fields` / `include`, `api.cache.public` only on public routes without anyone's own data, `api.deprecated` on
+   routes being removed — §5).
 
 9. **Verify.** Run `php artisan optimize:clear`, then — with the user's OK, because these commands write
    the DB — install and exercise the lifecycle from the command line. The folder is already on disk, so
@@ -336,7 +338,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-01` |
+| Lần cuối cập nhật / Last updated | `2026-11-02` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |
