@@ -187,6 +187,12 @@ what step 0 found.
    discovery by `configCode`, the `CheckoutTotalMethod` contract and its currency rule, and price
    resolvers. Use it only when `packages.shop.db` is true.
 
+   **(If an admin REST API, sync events, or writes to shop data)** — the plugin exposes admin API endpoints
+   for an ERP/CRM, records sync events of its own, or changes orders/stock/products/customers: follow
+   `references/api-and-events.md` (`api.admin:<route>,write` + `throttle:gp247-api-write` +
+   `api.idempotent[:optional]`; event types merged into `gp247-config.api.events` and recorded with
+   `ApiEvents::record()`; save shop data through gp247/shop's models so the shop's events fire).
+
 9. **Verify.** Run `php artisan optimize:clear`, then — with the user's OK, because these commands write
    the DB — install and exercise the lifecycle from the command line. The folder is already on disk, so
    the install is **in place**: nothing is downloaded and no API License is needed. The scaffold's
@@ -306,6 +312,8 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 | Storing uploads inside the plugin folder | The folder is deleted and replaced on update. Store user files under a shared `public/GP247/…` area or `storage/`. |
 | Guessing the business logic | Out of scope and likely wrong. Ask the four Input questions when the spec is unclear. |
 | Forgetting `php artisan optimize:clear` | Admin shows stale routes/views/config — the #1 support issue after building. |
+| Writing orders/stock/products/customers with raw SQL or a query-builder `update()` | The shop records no event and `updated_at` may not move, so an ERP never sees the change. Save through gp247/shop's models or methods (`references/api-and-events.md` §4). |
+| Overwriting `gp247-config.api.events` instead of merging, or putting personal data in event `data` | Overwriting removes the shop's own event types; event data is read by external systems. Merge, prefix with the plugin key, declare only non-personal fields (`references/api-and-events.md` §3). |
 | Testing uninstall with a plain `gp247:ext-uninstall` on the plugin you are building | It **deletes the source folder** — the code you just wrote is gone. Always use `--only-data` while developing (admin: "Only remove data", not "Remove"). |
 | Running `gp247:ext-enable` right after `ext-install` | Redundant: the scaffold's `install()` already writes the ON value. |
 
@@ -318,6 +326,9 @@ add the checkout, ledger and carrier contracts this skill does not cover.
   `update()`, the overwrite/preserve map, secrets, admin menu, storefront registries.
 - `references/checkout-plugins.md` — read at step 8 only: total-method plugins and price resolvers
   (payment and shipping have their own skills).
+- `references/api-and-events.md` — read only when the plugin adds admin REST API endpoints, sync events,
+  or writes shop data: write-endpoint middleware, sync-ready lists, plugin event types, shop events. Full
+  guide: https://github.com/gp247net/gp247-docs/blob/main/api/create-api.md (section 5.2).
 
 ---
 
@@ -325,7 +336,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-10-18` |
+| Lần cuối cập nhật / Last updated | `2026-11-01` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |

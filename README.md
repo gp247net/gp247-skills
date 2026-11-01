@@ -13,7 +13,7 @@ the GP247 skill standard (`247-skill`) — English throughout, a mandatory trigg
 
 | Skill | Summary | Last updated |
 | --- | --- | --- |
-| [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | Scaffold and build a brand-new GP247 plugin (TailAdmin + Livewire admin, including coupon / total-method plugins), update-safe. | 2026-10-18 |
+| [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | Scaffold and build a brand-new GP247 plugin (TailAdmin + Livewire admin, including coupon / total-method plugins), update-safe. | 2026-11-01 |
 | [gp247-payment-plugin-create](./skills/gp247-payment-plugin-create/SKILL.md) | Build a payment plugin on gp247/shop's money contract: checkout hand-off, order payment ledger (money recorded once), signature-checked webhook, optional payment links and refunds. | 2026-10-18 |
 | [gp247-shipping-plugin-create](./skills/gp247-shipping-plugin-create/SKILL.md) | Build a shipping plugin on gp247/shop's shipping contract: carrier quotes per service, optional shipments, labels, tracking, webhook and cash on delivery. | 2026-10-18 |
 | [gp247-template-create](./skills/gp247-template-create/SKILL.md) | Scaffold and build a brand-new GP247 storefront template (theme), update-safe. | 2026-10-18 |
@@ -42,4 +42,4 @@ skill still works when installed alone; when you change the script, change every
 
 ---
 
-<sub>📅 **Last updated:** 2026-10-22 · ✍️ **Author:** GP247</sub>
+<sub>📅 **Last updated:** 2026-11-01 · ✍️ **Author:** GP247</sub>

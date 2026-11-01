@@ -13,7 +13,7 @@
 
 | スキル | 概要 | 最終更新 |
 | --- | --- | --- |
-| [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | GP247 プラグインを新しく組み立てて構築します（TailAdmin + Livewire の管理画面、割引コード／total-method プラグインを含む）。更新にも安全です。 | 2026-10-18 |
+| [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | GP247 プラグインを新しく組み立てて構築します（TailAdmin + Livewire の管理画面、割引コード／total-method プラグインを含む）。更新にも安全です。 | 2026-11-01 |
 | [gp247-payment-plugin-create](./skills/gp247-payment-plugin-create/SKILL.md) | gp247/shop のお金の約束に沿った決済プラグインを構築します：チェックアウトからの引き継ぎ、注文の支払台帳（入金を一度だけ記録）、署名を検証する Webhook、オプションで支払リンクと返金。 | 2026-10-18 |
 | [gp247-shipping-plugin-create](./skills/gp247-shipping-plugin-create/SKILL.md) | gp247/shop の配送の約束に沿った配送プラグインを構築します：配送会社のサービスごとの見積もり、オプションで送り状の作成、ラベル印刷、追跡、Webhook、代金引換（COD）。 | 2026-10-18 |
 | [gp247-template-create](./skills/gp247-template-create/SKILL.md) | GP247 のテンプレート（ストアフロントのデザイン）を新しく組み立てて構築します。更新にも安全です。 | 2026-10-18 |
@@ -42,4 +42,4 @@ php <skill-dir>/scripts/gp247-probe.php
 
 ---
 
-<sub>📅 **最終更新:** 2026-10-22 · ✍️ **作成者 (Author):** GP247</sub>
+<sub>📅 **最終更新:** 2026-11-01 · ✍️ **作成者 (Author):** GP247</sub>
