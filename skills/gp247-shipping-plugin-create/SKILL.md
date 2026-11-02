@@ -230,7 +230,7 @@ what the carrier offers; webhook secret generated on install and shown as part o
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-10-18` |
+| Lần cuối cập nhật / Last updated | `2026-11-03` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 shop repo | https://github.com/gp247net/shop |
 | source | https://github.com/gp247net/shop/tree/master/src/Shipping |

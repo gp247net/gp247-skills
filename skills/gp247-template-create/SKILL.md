@@ -115,7 +115,7 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
      the scaffolder wrote; it is a static default, not your site's version.
    - `requireComposerPackages` **must include `"gp247/front"`**; add `"gp247/shop"` for a selling
      template.
-   - Start `version` and `requireUpdateFrom` at `"1.0"`. Field reference in
+   - Start `version` and `minUpdateFrom` at `"1.0"`. Field reference in
      `references/file-templates.md` §1.
 
 4. **Build the required views — the template contract.** Every view below is looked up under
@@ -293,7 +293,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-10-18` |
+| Lần cuối cập nhật / Last updated | `2026-11-03` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |

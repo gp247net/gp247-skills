@@ -116,7 +116,7 @@ what step 0 found.
      list of every minor. Lower the floor only when the user wants older sites **and** you have
      confirmed every capability the plugin uses exists there. Replace whatever value the scaffolder
      wrote; it is a static default, not your site's version.
-   - Start `version` at `"1.0"` and `requireUpdateFrom` at `"1.0"`. List real dependencies in
+   - Start `version` at `"1.0"` and `minUpdateFrom` at `"1.0"`. List real dependencies in
      `requireComposerPackages` (e.g. `gp247/shop` for a checkout plugin) and `requireGp247Extensions`
      only if truly needed. Keep `requireLivewire` `false` unless the plugin itself requires Livewire.
    - `storeScope`: `"global"` unless the settings must differ per store (details in
@@ -338,7 +338,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-02` |
+| Lần cuối cập nhật / Last updated | `2026-11-03` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |

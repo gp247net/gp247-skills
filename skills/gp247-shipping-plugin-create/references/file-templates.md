@@ -26,7 +26,7 @@ The scaffolder emits this shape; edit the values, not the shape:
     "configKey": "<Name>",
     "version": "1.0",
     "requireCore": ["<probe.require_core>"],
-    "requireUpdateFrom": "1.0",
+    "minUpdateFrom": "1.0",
     "requireComposerPackages": [],
     "requireGp247Extensions": [],
     "requireLivewire": false,
@@ -41,7 +41,7 @@ The scaffolder emits this shape; edit the values, not the shape:
 | `configGroup` | Always `"Plugins"` for a plugin. |
 | `version` | `1.0`, `1.1`, `2.0`… **Every release must be greater** than the installed one (compared with `version_compare`) or 1-click update refuses it. |
 | `requireCore` | Core versions the plugin runs on. Each entry is a range: `"X.Y"` = `>= X.Y.0` and `< (X+1).0.0`; several entries are a union. Use the probe's `require_core` (the running `major.minor`), **one entry per supported major**. Core compares against `config('gp247.core')`, which has no patch number — so never write a patch-level floor like `"3.0.3"`: it can fail on a site that has the patch. To express "needs feature F", rely on a minor that has F. |
-| `requireUpdateFrom` | Minimum installed version allowed to 1-click update to this release. `"1.0"` = practically no restriction; raise it only when a major release cannot migrate from older versions. |
+| `minUpdateFrom` | Lowest installed version (≥) allowed to 1-click update to this release — e.g. `"1.2"` lets 1.2, 1.3 or 1.9 update straight and blocks 1.1. `"1.0"` = practically no restriction; raise it only when a major release cannot migrate from older versions. Since gp247/core 3.9; replaces the old name `requireUpdateFrom` (still read with a deprecation warning, removed in core 4.0) — never write the old name. |
 | `requireComposerPackages` | Composer packages that must be present (e.g. `gp247/shop` for a checkout plugin). |
 | `requireGp247Extensions` | Other GP247 extensions required first (by key). |
 | `requireLivewire` | Informational; keep `false` — the admin shell ships Livewire already. |
