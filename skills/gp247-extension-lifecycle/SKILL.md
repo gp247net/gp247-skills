@@ -32,7 +32,7 @@ command names, option flags, extension keys, or JSON envelope fields.
 - **Creating / scaffolding a NEW plugin** — use `gp247-plugin-create`. This skill only manages extensions
   that already exist as a `.zip`, an on-disk folder, or a marketplace item.
 - **Creating a NEW storefront template** — use `gp247-template-create`.
-- **Updating the GP247 platform itself** (core/front/shop) after `composer update` — that is
+- **Updating the GP247 platform itself** (core/front/shop/mcp) after `composer update` — that is
   `gp247:update`, not an extension operation; see `gp247-docs/system/update-gp247.md`. (It also applies
   pending extension data updates — see step 3.)
 - **Only explaining** how the lifecycle works with no intent to run it — answer directly or point at
@@ -239,7 +239,7 @@ without echoing `<L>`.
 | Registering the API License while `APP_URL` is `http://localhost` | The license binds the wrong domain; every later library call is refused. Set the real domain first. |
 | Expecting `ext-install` to install composer packages or required extensions | It only checks them. `composer require` / install the dependency first. |
 | Echoing / committing a paid `--license` | It is a secret. Never print it back or write it into a doc/commit. |
-| Using this skill to run `gp247:update` for a platform update | That updates core/front/shop. Different doc (`system/update-gp247`). |
+| Using this skill to run `gp247:update` for a platform update | That updates core/front/shop/mcp. Different doc (`system/update-gp247`). |
 
 ## Bundled resources
 

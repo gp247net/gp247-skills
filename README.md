@@ -34,7 +34,7 @@ It prints one JSON object with:
   (`config('gp247.core')`), plus the `requireCore` value to write into `gp247.json`;
 - whether `gp247/front` and `gp247/shop` are usable — judged by their code **and** their database tables;
 - the `gp247:*` commands the site has;
-- the capabilities (features, extension points) its core/front/shop offer.
+- the capabilities (features, extension points) its core/front/shop/mcp offer.
 
 The skill branches on these facts. The same skill therefore works on any core version and does not go
 stale each time core is released. The skills carry **identical** copies of the script so each

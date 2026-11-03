@@ -34,7 +34,7 @@ Script in ra một đối tượng JSON gồm:
   `requireCore` nên ghi vào `gp247.json`;
 - `gp247/front`, `gp247/shop` có dùng được không — xét cả mã nguồn **lẫn** bảng trong cơ sở dữ liệu;
 - danh sách lệnh `gp247:*` mà site đang có;
-- các khả năng (tính năng, điểm cắm) mà core/front/shop hiện có.
+- các khả năng (tính năng, điểm cắm) mà core/front/shop/mcp hiện có.
 
 Skill rẽ nhánh theo kết quả này. Nhờ vậy cùng một skill dùng được cho mọi phiên bản core, và không cũ đi
 mỗi lần core lên phiên bản. Các skill mang các bản sao **giống hệt nhau** của script, để mỗi skill vẫn
