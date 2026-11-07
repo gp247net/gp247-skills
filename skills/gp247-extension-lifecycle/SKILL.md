@@ -1,6 +1,6 @@
 ---
 name: gp247-extension-lifecycle
-description: Installs, enables, disables, upgrades, and uninstalls existing GP247 / S-Cart extensions — both plugins and templates — from the command line using the `gp247:ext-*` command family, and reports each result. It probes the installation first and uses only the commands and options the site's gp247/core actually has. Always use this skill when the user wants to manage the lifecycle of an already-built extension — install a plugin from a `.zip`, an extracted folder, or a marketplace key; enable or disable it; update one or all to a new release; apply the data update after files were changed by git or composer; re-publish its static files; uninstall or purge it; register the site's API license to connect the GP247 library; set a paid license; or list / check what is installed and what has updates — for example "cài plugin News", "gỡ plugin X", "nâng cấp tất cả extension", "bật/tắt template", "cập nhật license plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese, so do not wait for an exact English keyword match. Do not use this skill to CREATE or scaffold a NEW plugin (use gp247-plugin-create) or a new template (use gp247-template-create), or to update the GP247 platform packages (core/front/shop) themselves after `composer update` — that is `gp247:update`, documented in gp247-docs `system/update-gp247`.
+description: Installs, enables, disables, upgrades, and uninstalls existing GP247 / S-Cart extensions — both plugins and templates — from the command line using the `gp247:ext-*` command family, and reports each result. It probes the installation first and uses only the commands and options the site's gp247/core actually has. Always use this skill when the user wants to manage the lifecycle of an already-built extension — install a plugin from a `.zip`, an extracted folder, or a marketplace key; enable or disable it; update one or all to a new release; apply the data update after files were changed by git or composer; re-publish its static files; uninstall or purge it; register the site's API license to connect the GP247 library; set a paid license; or list / check what is installed and what has updates — for example "cài plugin News", "gỡ plugin X", "nâng cấp tất cả extension", "bật/tắt template", "cập nhật license plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese, so do not wait for an exact English keyword match. Do not use this skill to CREATE or scaffold a NEW plugin (use gp247-plugin-create) or a new template (use gp247-template-create), or to update the GP247 platform packages (core/front/shop) themselves after `composer update` — that is `gp247:update`, documented in gp247-docs `install-upgrade/update`.
 ---
 
 # gp247-extension-lifecycle — Install, upgrade & remove GP247 extensions from the CLI
@@ -33,7 +33,7 @@ command names, option flags, extension keys, or JSON envelope fields.
   that already exist as a `.zip`, an on-disk folder, or a marketplace item.
 - **Creating a NEW storefront template** — use `gp247-template-create`.
 - **Updating the GP247 platform itself** (core/front/shop/mcp) after `composer update` — that is
-  `gp247:update`, not an extension operation; see `gp247-docs/system/update-gp247.md`. (It also applies
+  `gp247:update`, not an extension operation; see `gp247-docs/install-upgrade/update.md`. (It also applies
   pending extension data updates — see step 3.)
 - **Only explaining** how the lifecycle works with no intent to run it — answer directly or point at
   `gp247-docs/system/command-line-reference.md`.
@@ -239,7 +239,7 @@ without echoing `<L>`.
 | Registering the API License while `APP_URL` is `http://localhost` | The license binds the wrong domain; every later library call is refused. Set the real domain first. |
 | Expecting `ext-install` to install composer packages or required extensions | It only checks them. `composer require` / install the dependency first. |
 | Echoing / committing a paid `--license` | It is a secret. Never print it back or write it into a doc/commit. |
-| Using this skill to run `gp247:update` for a platform update | That updates core/front/shop/mcp. Different doc (`system/update-gp247`). |
+| Using this skill to run `gp247:update` for a platform update | That updates core/front/shop/mcp. Different doc (`install-upgrade/update`). |
 
 ## Bundled resources
 
