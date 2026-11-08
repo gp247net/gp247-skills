@@ -14,7 +14,7 @@ is identical, but scriptable and usable on servers with no admin access.
 
 This skill picks the correct command, checks the current state first, guards the destructive operations,
 and reports a clear per-item result. It is the operational counterpart to
-`gp247-docs/system/command-line-reference.md`.
+`gp247-docs/cli/cli-extensions.md`.
 
 **Never assume what the site's core offers.** The command family grows between core releases. Step 0
 reads the site's actual commands and options; the site's own `php artisan help <command>` is the final
@@ -36,7 +36,7 @@ command names, option flags, extension keys, or JSON envelope fields.
   `gp247:update`, not an extension operation; see `gp247-docs/install-upgrade/update.md`. (It also applies
   pending extension data updates — see step 3.)
 - **Only explaining** how the lifecycle works with no intent to run it — answer directly or point at
-  `gp247-docs/system/command-line-reference.md`.
+  `gp247-docs/cli/cli-extensions.md`.
 
 ## Input
 
@@ -254,7 +254,7 @@ without echoing `<L>`.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-10-18` |
+| Lần cuối cập nhật / Last updated | `2026-11-08` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
-| source | https://github.com/gp247net/gp247-docs/blob/main/system/command-line-reference.md |
+| source | https://github.com/gp247net/gp247-docs/blob/main/cli/cli-extensions.md |
