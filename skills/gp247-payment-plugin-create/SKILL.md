@@ -201,6 +201,7 @@ with `PaymentRequestService::recordMovement()`, mirror provider-side refunds via
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
+| Running API keys, secrets, webhook payloads or gateway references through `gp247_clean()` or another cleaning function | Encoding turns `&` into `&amp;`: the provider rejects the key or the signature no longer matches. Store them exactly as received (secrets encrypted); clean only the text a person types with `gp247_text_plain()` and print with `{ }`. |
 | A settings screen that does not say what is still missing | The owner enables the plugin, nothing happens, and they must hunt for the cause on other screens. Implement `readiness()` with every local condition the plugin needs, each with the reason and a link to where to fix it (`references/file-templates.md` §3A). |
 | `$order->update(['status' => …, 'payment_status' => …, 'received' => …])` | Skips stock, history and events; `received` is derived from the ledger and is overwritten. Use `recordPayment()` + `changeStatus()`. |
 | Trusting the return URL's query string | Anyone can type it. Read the payment back from the provider (or wait for the verified webhook). |
@@ -230,7 +231,7 @@ with `PaymentRequestService::recordMovement()`, mirror provider-side refunds via
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-03` |
+| Lần cuối cập nhật / Last updated | `2026-11-13` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 shop repo | https://github.com/gp247net/shop |
 | source | https://github.com/gp247net/shop/tree/master/src/Payment |

@@ -164,6 +164,14 @@ what step 0 found.
      the admin shell does not load jQuery; use Livewire/Alpine (and flatpickr for dates). Render every
      string via `trans('Plugins/<Name>::lang.key')` or `gp247_language_render(...)`; add the values to
      both `Lang/vi/lang.php` and `Lang/en/lang.php` — never hardcode display text.
+   - **Text in, text out.** Store what the person typed: clean input with
+     `gp247_text_plain($data, $exclude, stripTags: true)` when `function_exists('gp247_text_plain')` (core 3.12+;
+     older core: `trim(strip_tags(...))`) — it never HTML-encodes. Put editor HTML, passwords and secrets in `$exclude`.
+     Print text with `{{ }}`; `{!! !!}` only for trusted HTML (editor content, GP247 render helpers) — core's
+     `raw_output_scan` check flags every other raw print. Never call `gp247_clean()` (deprecated, removed in 4.0).
+     A plugin whose own tables were saved with `gp247_clean()` decodes them once in `update()` with
+     `\GP247\Core\Support\StoredTextDecoder::run('<Name>_text_decoded', ['<table>' => ['<column>', ...]])` and calls
+     `StoredTextDecoder::markStoredAsTyped('<Name>_text_decoded')` in `install()`, so a fresh install is never decoded.
 
 7. **Storefront surface** (only if `packages.front.db`; templates are owned by other people, so a plugin
    never edits or ships template files):
@@ -295,6 +303,8 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
+| Saving input with `gp247_clean()` | It HTML-encodes on save: names show `&amp;`, API clients get encoded text, and it is removed in core 4.0. Store with `gp247_text_plain()`, encode on output with `{{ }}` (step 6). |
+| Printing a variable with `{!! $value !!}` | Text is stored as typed since core 3.12, so a raw print shows any HTML someone entered — and System alerts flags it (`raw_output_scan`). Use `{{ }}`; keep `{!! !!}` for editor HTML and GP247 render helpers. |
 | Copying a `requireCore` value from an example or old plugin | Each entry is a range ending before the next major; a value from another major makes core refuse to install ("not compatible"). Use the probe's `require_core`. |
 | Listing every minor in `requireCore` (`["3.0","3.1"]`) | Redundant — `"3.0"` already covers all of 3.x. One entry per supported major. |
 | Taking the core version from composer | Composer metadata can disagree with `config('gp247.core')`, which is what the compatibility check uses. Use the probe. |
@@ -338,7 +348,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-03` |
+| Lần cuối cập nhật / Last updated | `2026-11-13` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |

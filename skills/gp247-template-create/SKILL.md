@@ -139,6 +139,9 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    Alpine + Livewire, no jQuery / AdminLTE / Bootstrap widgets** (flatpickr for dates). Render every string
    via `gp247_language_render(...)` / `trans('...')` and fill both `Lang/vi/lang.php` and
    `Lang/en/lang.php` — never hardcode display text.
+   Print text with `{{ }}`: since core 3.12 text is stored as typed and encoded only on output. Keep `{!! !!}`
+   for trusted HTML only — editor content and GP247 render helpers such as `gp247_render_block(...)`; core's
+   `raw_output_scan` check flags any other raw print of a variable.
 
 5. **Layout blocks.** The site owner places content (banners, product grids, HTML, plugin blocks) into the
    storefront through admin Layout Block, by position. The layout must call
@@ -259,6 +262,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
+| Printing a variable with `{!! $value !!}` | Text is stored as typed since core 3.12, so a raw print shows any HTML someone entered — and System alerts flags it (`raw_output_scan`). Use `{{ }}`; keep `{!! !!}` for editor HTML and GP247 render helpers. |
 | Copying a `requireCore` value from an example or old template | Each entry is a range ending before the next major; a value from another major makes core refuse to install. Use the probe's `require_core`. |
 | Shipping only `home` and a layout | `page_detail`, `front_search` and `notfound` are required too — a missing one stops the request with "view not found". |
 | Missing `common/*` partials | Search (and, on a selling site, every shop fallback page) includes them from the active template → "view not found". Ship the partials in step 4. |
@@ -293,7 +297,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-03` |
+| Lần cuối cập nhật / Last updated | `2026-11-13` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |

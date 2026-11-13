@@ -200,6 +200,7 @@ what the carrier offers; webhook secret generated on install and shown as part o
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
+| Running API tokens, secrets, webhook payloads or tracking codes through `gp247_clean()` or another cleaning function | Encoding turns `&` into `&amp;`: the provider rejects the key or the signature no longer matches. Store them exactly as received (secrets encrypted); clean only the text a person types with `gp247_text_plain()` and print with `{ }`. |
 | A settings screen that does not say what is still missing | The owner enables the plugin, nothing happens, and they must hunt for the cause on other screens. Implement `readiness()` with every local condition the plugin needs, each with the reason and a link to where to fix it (`references/file-templates.md` §3A). |
 | Converting the carrier price to the display currency in the plugin | The shop converts carrier → base → display once; a second conversion doubles it. Return `Money` in the carrier's currency. |
 | Throwing from `rates()` on a normal failure | Return `RateResult::error()` for an expected refusal (address, not configured). Reserve exceptions for an outage: the shop logs them and pauses that carrier for a minute. |
@@ -230,7 +231,7 @@ what the carrier offers; webhook secret generated on install and shown as part o
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-03` |
+| Lần cuối cập nhật / Last updated | `2026-11-13` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 shop repo | https://github.com/gp247net/shop |
 | source | https://github.com/gp247net/shop/tree/master/src/Shipping |
