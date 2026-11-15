@@ -143,6 +143,16 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    for trusted HTML only — editor content and GP247 render helpers such as `gp247_render_block(...)`; core's
    `raw_output_scan` check flags any other raw print of a variable.
 
+   **The `<head>` is the SEO surface — keep it on the shared component.** The layout's `<head>` calls
+   `<x-gp247-front::meta-head …>` exactly as the default layout does (snippet in `references/file-templates.md`
+   §2); that component prints the title, description, canonical URL, hreflang, Open Graph, Twitter card and
+   the site-wide Organization JSON-LD, and follows the SEO admin settings. Do **not** hand-write those tags in
+   the layout, and do not copy `gp247_components/meta-head` or `common/jsonld_*` into the template unless the
+   user asks — a copy stops receiving SEO fixes from `gp247/front`. Per-page structured data goes through
+   `@push('jsonld')` with the `common/jsonld_*` partials (they build the JSON with `SeoMeta`, escaped for
+   `<script>`); never `json_encode` it by hand. Ship no default share image: the page image, else the store's
+   `og_image`, else no `og:image` tag.
+
 5. **Layout blocks.** The site owner places content (banners, product grids, HTML, plugin blocks) into the
    storefront through admin Layout Block, by position. The layout must call
    `{!! gp247_render_block('<position>', $layout_page ?? null) !!}` for **every** position listed in the
@@ -173,8 +183,11 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    Copy the requested page from `vendor/gp247/shop/src/Views/templates/GP247Front/<sub-path>` to
    `app/GP247/Templates/<Name>/<sub-path>` (same sub-path, same file name) and restyle it there. The shop
    prefers your copy and keeps its default for every other page. Do **not** copy the whole set — every
-   copied file stops receiving fixes from shop updates. Page table and the checkout caveat in
-   `references/file-templates.md` §6.
+   copied file stops receiving fixes from shop updates. Start each copied file with a one-line Blade comment
+   naming its source (`{{-- source: gp247/shop src/Views/templates/GP247Front/screen/shop_cart.blade.php --}}`)
+   so whoever maintains the template can diff it after a `gp247/front` / `gp247/shop` update and carry over
+   security, SEO and behaviour fixes (escaping, sort options, new Livewire properties). Page table and the
+   checkout caveat in `references/file-templates.md` §6.
 
 9. **Verify.** Run `php artisan optimize:clear`, then:
    - **Install** — with the user's OK (it writes the DB), install in place (the folder is on disk:
@@ -223,6 +236,7 @@ Created template <Name> (update-safe) on gp247/core <probe.core>:
 - [x] Scaffolded: php artisan gp247:make-template --name=<Name> --download=0
 - [x] gp247.json → configKey <Name>, requireCore <probe.require_core>, requireComposerPackages [<list>], version 1.0
 - [x] Required views: layout, screen/{home,page_detail,front_search,notfound,404}, common/{item_single,pagination} (+ <the four shop partials / none — no shop>)
+- [x] SEO head: <x-gp247-front::meta-head> + @stack('jsonld') behind the JSON-LD switch; no hand-written meta tags, no bundled og:image
 - [x] Layout blocks: header (in <head>), top, left, center, right, bottom, footer; default blocks seeded in setupStore()
 - [ ] Settings: <effective/save helpers wired / skipped — no editable settings>
 - [ ] CSS: <built to public/css/app.css / UNVERIFIED — no Node>
@@ -266,6 +280,10 @@ installed. Required views with only `common/item_single` and `common/pagination`
 | Copying a `requireCore` value from an example or old template | Each entry is a range ending before the next major; a value from another major makes core refuse to install. Use the probe's `require_core`. |
 | Shipping only `home` and a layout | `page_detail`, `front_search` and `notfound` are required too — a missing one stops the request with "view not found". |
 | Missing `common/*` partials | Search (and, on a selling site, every shop fallback page) includes them from the active template → "view not found". Ship the partials in step 4. |
+| Hand-writing `<title>`, description, canonical, Open Graph or JSON-LD tags in the layout | They drift from the SEO settings and skip canonical/hreflang/structured data. Call `<x-gp247-front::meta-head …>` with the same attributes as the default layout; per-page JSON-LD only through `@push('jsonld')` and the `common/jsonld_*` partials. |
+| Bundling a default share image (`og:image`) | Every page then advertises the theme's sample picture instead of the shop. The component already falls back to the store's `og_image`, and leaves the tag out when there is none. |
+| Leaving `@stack('jsonld')` out of `<head>`, or outside the JSON-LD switch | Product/breadcrumb structured data disappears, or ignores the admin switch. Wrap it in `@if(\GP247\Front\Library\SeoMeta::jsonldEnabled())`. |
+| Copied package views with no record of their source | After a front/shop update nobody knows which files to diff, so escaping and behaviour fixes never reach the theme. Add the `source:` comment (step 8) and re-diff on every update. |
 | Rendering only some layout-block positions, or `header` outside `<head>` | Blocks filed under a missing position never appear; head-code blocks (analytics, verification tags) belong in `<head>`. |
 | Tailwind `content` globs that cover only the template folder | Shop fallback pages render with their own classes, which then have no CSS. Include the package views; define the colour tokens they use. |
 | Forgetting `requireComposerPackages: ["gp247/front"]` | A template only runs with the storefront present. |
@@ -297,7 +315,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-13` |
+| Lần cuối cập nhật / Last updated | `2026-11-15` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |

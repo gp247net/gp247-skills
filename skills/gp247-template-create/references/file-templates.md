@@ -78,6 +78,34 @@ the shop fills on the site with
 | `jsonld` | stack | product/breadcrumb structured data, inside `<head>` |
 | `block_main_content_left` / `_right`, `breadcrumb`, `block_menu`, `block_top`, `block_bottom`, `block_footer` | section | your own screens — the default layout provides them; shop pages do not fill them |
 
+**The `<head>` — SEO contract.** Start the layout like the default one; restyle the body, not this block:
+
+```blade
+<!DOCTYPE html>
+<html lang="{{ app()->getLocale() }}" dir="{{ gp247front_is_rtl() ? 'rtl' : 'ltr' }}">
+<head>
+    <x-gp247-front::meta-head :title="$title ?? null" :description="$description ?? null" :keyword="$keyword ?? null" :og_image="$og_image ?? null" :canonical="$canonical ?? null" :hreflang="$seoHreflang ?? []" />
+    @if(\GP247\Front\Library\SeoMeta::jsonldEnabled())
+        @stack('jsonld')
+    @endif
+    {!! gp247_render_block('header', $layout_page ?? null) !!}
+    <link rel="stylesheet" href="{{ gp247_file($GP247TemplateFile.'/css/app.css') }}">
+    @stack('styles')
+    {{-- @livewireStyles when Livewire is present --}}
+</head>
+```
+
+- `meta-head` prints charset/viewport, title, description, keywords, canonical, favicon, Open Graph, Twitter
+  card, CSRF token, hreflang (when the controller passes it) and the Organization JSON-LD. Controllers pass
+  `$title`, `$description`, `$keyword`, `$og_image` per page; the component falls back to the store values,
+  and leaves `og:image` out when neither the page nor the store has an image.
+- Product, breadcrumb and article structured data are pushed by the pages
+  (`@push('jsonld') @include($GP247TemplatePath.'.common.jsonld_product') @endpush`); the `common/jsonld_*`
+  partials build the JSON with `GP247\Front\Library\SeoMeta`. Copy them unchanged from the default template.
+- `sitemap.xml`, `robots.txt` and their stylesheet belong to `gp247/front`; a template adds nothing for them.
+- Use the RTL helper your template defines (the default one is `gp247front_is_rtl()`; a template that does not
+  load GP247Front's `function.php` defines its own, e.g. `<name>_is_rtl()`).
+
 **Folder layout** after this skill (the scaffold creates only the files marked *):
 
 ```
