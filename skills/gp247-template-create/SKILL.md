@@ -219,6 +219,13 @@ handles `null`**. Besides the 1-click update, when `capabilities.extension_data_
 `gp247:ext-update --type=template --key=<Name> --local`, or the admin template list's "apply data update"
 action) — once with `$fromVersion = null` on a site with no recorded version.
 
+**A settings screen is reached through `clickApp()`, never a menu entry of the template's own.** If the template has an
+admin settings screen (colours, fonts, layout options), `AppConfig::clickApp()` returns a redirect to it
+(`return redirect()->route('admin_<key>.settings');`) and does nothing else — the template's admin routes load only while it is
+enabled. From gp247/core 3.14.2 + gp247/front 3.10 the owner opens it from the ⚙ button on the template's row in Template manager
+(also while the template is in use) and from **Extension → Customize theme**, which opens the settings of the template the working
+store uses. No settings screen → keep the inherited `clickApp()` (`null`): no ⚙ button.
+
 **Secret settings must be encrypted at rest** (if `capabilities.secret_cast`). A template rarely needs a
 credential, but if an option holds one — a third-party API secret or token — never store it as a plain
 option: see `references/file-templates.md` §8. Public keys meant to appear in the page's HTML (e.g. a
@@ -288,6 +295,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 | Tailwind `content` globs that cover only the template folder | Shop fallback pages render with their own classes, which then have no CSS. Include the package views; define the colour tokens they use. |
 | Forgetting `requireComposerPackages: ["gp247/front"]` | A template only runs with the storefront present. |
 | Copying the whole `gp247/shop` view set into the template | Those pages freeze against shop-package updates. Override only the pages the user asked for (step 8). |
+| Adding an admin menu entry for the template's settings | Every template would grow the menu. Return a redirect from `clickApp()`; the ⚙ button and **Customize theme** open it. |
 | Letting the site owner edit `config.php` | 1-click update overwrites the file → their choices vanish. Editable values live in `admin_config` (step 6). |
 | Hand-creating the template folder instead of scaffolding | Misses required files (AppConfig, Provider, gp247.json, Lang). Always run `gp247:make-template` first. |
 | Changing `configKey` after release, or not bumping `version` | Update won't match releases / is refused as "not newer". |
@@ -315,7 +323,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-15` |
+| Lần cuối cập nhật / Last updated | `2026-11-17` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |
