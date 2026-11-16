@@ -224,7 +224,9 @@ admin settings screen (colours, fonts, layout options), `AppConfig::clickApp()` 
 (`return redirect()->route('admin_<key>.settings');`) and does nothing else — the template's admin routes load only while it is
 enabled. From gp247/core 3.14.2 + gp247/front 3.10 the owner opens it from the ⚙ button on the template's row in Template manager
 (also while the template is in use) and from **Extension → Customize theme**, which opens the settings of the template the working
-store uses. No settings screen → keep the inherited `clickApp()` (`null`): no ⚙ button.
+store uses. No settings screen → keep the inherited `clickApp()` (`null`): no ⚙ button. Register the settings route under the
+shared root **`<admin>/theme/<key>`** (lowercase key: `Route::group(['prefix' => GP247_ADMIN_PREFIX.'/theme', 'middleware' =>
+GP247_ADMIN_MIDDLEWARE], …)` → `Route::get('<key>', …)`) so Customize theme is highlighted there (gp247/front 3.10.1+).
 
 **Secret settings must be encrypted at rest** (if `capabilities.secret_cast`). A template rarely needs a
 credential, but if an option holds one — a third-party API secret or token — never store it as a plain
@@ -296,6 +298,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 | Forgetting `requireComposerPackages: ["gp247/front"]` | A template only runs with the storefront present. |
 | Copying the whole `gp247/shop` view set into the template | Those pages freeze against shop-package updates. Override only the pages the user asked for (step 8). |
 | Adding an admin menu entry for the template's settings | Every template would grow the menu. Return a redirect from `clickApp()`; the ⚙ button and **Customize theme** open it. |
+| Settings route at a template-specific path (`<admin>/<key>/settings`) | Customize theme is not highlighted there. Use `<admin>/theme/<key>`. |
 | Letting the site owner edit `config.php` | 1-click update overwrites the file → their choices vanish. Editable values live in `admin_config` (step 6). |
 | Hand-creating the template folder instead of scaffolding | Misses required files (AppConfig, Provider, gp247.json, Lang). Always run `gp247:make-template` first. |
 | Changing `configKey` after release, or not bumping `version` | Update won't match releases / is refused as "not newer". |
