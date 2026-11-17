@@ -126,10 +126,10 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    | View | Why it is required |
    |---|---|
    | `layout` | Every page — including every shop page that falls back — `@extends` it. Must define the sections and stacks in `references/file-templates.md` §2 and render the layout-block positions (step 5). |
-   | `screen/home`, `screen/page_detail`, `screen/front_search`, `screen/notfound` | Rendered by `gp247/front`; a missing one **stops the request** with "view not found". |
+   | `screen/home`, `screen/page_detail`, `screen/front_search`, `screen/notfound` | Rendered by `gp247/front`; a missing one **stops the request** with "view not found". `screen/notfound` is shown with HTTP 404 by `itemNotFound()` (front 3.10.1+) — the view only displays the message. |
    | `screen/404` | Optional — without it a missing page is a bare HTTP 404. |
    | `common/item_single`, `common/pagination` | Included by the default `screen/front_search` (and by shop pages). Needed whenever your screens include them — keep them when you start from the default screens. |
-   | `common/pagination_result`, `common/jsonld_product`, `common/jsonld_breadcrumb`, `common/render_form_custom_field` | **With `gp247/shop`:** the shop's fallback pages include these (and the two above) from the active template. |
+   | `common/pagination_result`, `common/jsonld_product`, `common/jsonld_breadcrumb`, `common/render_form_custom_field` | **With `gp247/shop`:** the shop's fallback pages include these (and the two above) from the active template. Make the `common/jsonld_*` ones one-line delegates to the package partial (step 4), not copies. |
 
    The fastest correct start is to copy these files from the default template's package folder
    (`vendor/gp247/front/src/Views/templates/GP247Front/` — `layout.blade.php`, `layout/`, `screen/`,
@@ -150,7 +150,11 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    the layout, and do not copy `gp247_components/meta-head` or `common/jsonld_*` into the template unless the
    user asks — a copy stops receiving SEO fixes from `gp247/front`. Per-page structured data goes through
    `@push('jsonld')` with the `common/jsonld_*` partials (they build the JSON with `SeoMeta`, escaped for
-   `<script>`); never `json_encode` it by hand. Ship no default share image: the page image, else the store's
+   `<script>`); never `json_encode` it by hand. A template still needs its own `common/jsonld_*` files (the
+   shop includes them from the active template), so write each one as a single line that hands over to the
+   package partial — `@include('GP247TemplatePath::GP247Front.common.jsonld_product')` (likewise `_breadcrumb`,
+   `_article`). Never copy the builder call: a copy misses fields added later (identifiers, rating, publisher)
+   and breaks on an older `gp247/front` whose builder does not have the new arguments. Ship no default share image: the page image, else the store's
    `og_image`, else no `og:image` tag.
 
 5. **Layout blocks.** The site owner places content (banners, product grids, HTML, plugin blocks) into the

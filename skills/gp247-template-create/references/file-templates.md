@@ -96,12 +96,23 @@ the shop fills on the site with
 ```
 
 - `meta-head` prints charset/viewport, title, description, keywords, canonical, favicon, Open Graph, Twitter
-  card, CSRF token, hreflang (when the controller passes it) and the Organization JSON-LD. Controllers pass
-  `$title`, `$description`, `$keyword`, `$og_image` per page; the component falls back to the store values,
-  and leaves `og:image` out when neither the page nor the store has an image.
+  card, CSRF token, hreflang and the Organization JSON-LD. Controllers pass `$title`, `$description`,
+  `$keyword`, `$og_image` per page; the component falls back to the store values (an empty description or
+  keyword counts as missing), and leaves `og:image` out when neither the page nor the store has an image.
+  It also decides, from the current route, what a layout never passes (gp247/front 3.10+): `meta robots`
+  (`noindex, follow` on cart/checkout/account/search and filtered listings), the canonical (keeps `?page=N`),
+  `og:url` (= canonical), hreflang + `x-default` when the URL has a language prefix, `og:type` (from the
+  `seo_og_types` registry, else `website`) and the Google/Bing verification codes. Keep the layout call as
+  above — do not add props for these.
 - Product, breadcrumb and article structured data are pushed by the pages
   (`@push('jsonld') @include($GP247TemplatePath.'.common.jsonld_product') @endpush`); the `common/jsonld_*`
-  partials build the JSON with `GP247\Front\Library\SeoMeta`. Copy them unchanged from the default template.
+  partials build the JSON with `GP247\Front\Library\SeoMeta`. In the template, each of them is one line that
+  hands over to the package partial, so it always carries the current fields and runs on any gp247/front:
+
+  ```blade
+  {{-- common/jsonld_product.blade.php (same for jsonld_breadcrumb, jsonld_article) --}}
+  @include('GP247TemplatePath::GP247Front.common.jsonld_product')
+  ```
 - `sitemap.xml`, `robots.txt` and their stylesheet belong to `gp247/front`; a template adds nothing for them.
 - Use the RTL helper your template defines (the default one is `gp247front_is_rtl()`; a template that does not
   load GP247Front's `function.php` defines its own, e.g. `<name>_is_rtl()`).
