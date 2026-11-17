@@ -137,12 +137,12 @@ text, and check the **exit code** on every run (its meaning per command is in th
    | Install paid by key | `gp247:ext-install --type=<t> --key=<K> --paid --license=<L>` | **One key at a time**. |
    | Enable | `gp247:ext-enable --type=<t> --key=<K>` | Refused if not installed. |
    | Disable | `gp247:ext-disable --type=<t> --key=<K>` | Refused if not installed, or a template still in use. |
-   | Update from library | `gp247:ext-update --type=<t> --key=<K>` / `--all` | **Replaces the folders** (backup kept). Never on a working copy. |
-   | Apply data update (files changed by `git pull` / composer / copy) | `gp247:ext-update --type=<t> --key=<K> --local` / `--all` (`--dry-run` to preview) | If `capabilities.ext_update_local`. Downloads nothing; runs the extension's `AppConfig::update()` when its `gp247.json` version is newer than the version core recorded. Admin equivalent: "Apply data update" on the extension list. |
+   | Update from library | `gp247:ext-update --type=<t> --key=<K>` / `--all` | **Replaces the folders** (backup kept). Never on a working copy. From gp247/core 3.14.3, when the extension's code was already loaded in that process (another plugin uses it), the data hook runs in a child process (`--local`); if none can start, the item fails with `data_update_pending` and names the `--local` command to run — run it. |
+   | Apply data update (files changed by `git pull` / composer / copy) | `gp247:ext-update --type=<t> --key=<K> --local` / `--all` (`--dry-run` to preview) | If `capabilities.ext_update_local`. Downloads nothing; runs the extension's `AppConfig::update()` when its `gp247.json` version is newer than the version core recorded. From gp247/core 3.14.3 it first copies the extension's `public/` to `public/GP247/...` (copy fails ⇒ the hook does not run, item failed) and finishes a library update left pending. Admin equivalent: "Apply data update" on the extension list. |
    | Uninstall | `gp247:ext-uninstall --type=<t> --key=<K>` | Runs the extension's `uninstall()`, removes its config **and deletes its folders**. `--only-data` keeps the folders. |
    | Purge on-disk-only | `gp247:ext-uninstall --type=<t> --key=<K> --purge` | For a not-installed-but-on-disk item; deletes the folders. |
    | License | `gp247:ext-license --type=<t> --key=<K> [--license=<L>] [--delete]` | Set / show / remove a paid license. |
-   | Re-publish static files | `gp247:ext-publish --type=<t> --key=<K>` / `--all` | If the command exists. Copies an installed extension's `public/` to `public/GP247/...` again. The repair for `gp247:doctor` → `extension_assets`. |
+   | Re-publish static files | `gp247:ext-publish --type=<t> --key=<K>` / `--all` | If the command exists. Copies an installed extension's `public/` to `public/GP247/...` again. The repair for `gp247:doctor` → `extension_assets` (missing files; from gp247/core 3.14.3 also outdated files). On core older than 3.14.3, run it after `ext-update --local` when the files were replaced by hand — that core's `--local` does not copy `public/`. |
 
    `gp247:update` (platform update) also runs `ext-update --local --all` for plugins and then templates;
    a failed data hook there is only a **warning** (exit 0) listed in `data.extension_data` — check it.
@@ -231,6 +231,7 @@ without echoing `<L>`.
 | `ext-install` on an already-installed key | Refused. To refresh use `ext-update`; to reinstall, `ext-uninstall --only-data` first. |
 | Reading exit 0 of `ext-update --all` as "all updated" | It is non-zero only when **every** item failed. Read `data.failed`. |
 | Ignoring the warnings of `gp247:update` | A failed extension data hook is only a warning there. Check `data.extension_data` and re-run `ext-update --local` for the failed key. |
+| Treating `data_update_pending` as done | The files are replaced but the data hook has not run (no child process allowed). Run the `--local` command the message names, or the admin "Apply data update" button. |
 | Assuming `--only-data` leaves the extension's tables | It runs the extension's own `uninstall()`, which may drop its tables. Only the folders are kept. |
 | Combining `--only-data` and `--purge` | Refused (`conflicting_options`). |
 | `--paid` with several `--key` values | Refused (`paid_multi_not_allowed`). Install paid items one key at a time. |
@@ -254,7 +255,7 @@ without echoing `<L>`.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-08` |
+| Lần cuối cập nhật / Last updated | `2026-11-17` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/cli/cli-extensions.md |

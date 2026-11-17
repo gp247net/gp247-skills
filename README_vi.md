@@ -13,11 +13,11 @@ buộc, và Block thông tin skill với mốc thời gian cập nhật.
 
 | Skill | Mô tả ngắn | Cập nhật lần cuối |
 | --- | --- | --- |
-| [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | Dựng và xây mới một plugin GP247 (admin TailAdmin + Livewire, gồm cả plugin mã giảm giá / total-method), an toàn khi update. | 2026-11-01 |
+| [gp247-plugin-create](./skills/gp247-plugin-create/SKILL.md) | Dựng và xây mới một plugin GP247 (admin TailAdmin + Livewire, gồm cả plugin mã giảm giá / total-method), an toàn khi update. | 2026-11-17 |
 | [gp247-payment-plugin-create](./skills/gp247-payment-plugin-create/SKILL.md) | Xây plugin thanh toán theo hợp đồng tiền của gp247/shop: chuyển giao từ checkout, sổ thanh toán của đơn (ghi tiền đúng một lần), webhook có xác minh chữ ký, tuỳ chọn link thanh toán và hoàn tiền. | 2026-10-18 |
 | [gp247-shipping-plugin-create](./skills/gp247-shipping-plugin-create/SKILL.md) | Xây plugin vận chuyển theo hợp đồng vận chuyển của gp247/shop: báo giá từng dịch vụ của hãng, tuỳ chọn tạo vận đơn, in nhãn, theo dõi, webhook và thu hộ (COD). | 2026-10-18 |
 | [gp247-template-create](./skills/gp247-template-create/SKILL.md) | Dựng và xây mới một template (giao diện storefront) GP247, an toàn khi update. | 2026-10-18 |
-| [gp247-extension-lifecycle](./skills/gp247-extension-lifecycle/SKILL.md) | Cài đặt, bật/tắt, nâng cấp, áp dụng cập nhật dữ liệu, gỡ bỏ plugin & template GP247 có sẵn qua CLI (`gp247:ext-*`). | 2026-10-18 |
+| [gp247-extension-lifecycle](./skills/gp247-extension-lifecycle/SKILL.md) | Cài đặt, bật/tắt, nâng cấp, áp dụng cập nhật dữ liệu, gỡ bỏ plugin & template GP247 có sẵn qua CLI (`gp247:ext-*`). | 2026-11-17 |
 
 ## Skill tự nhận phiên bản core
 
@@ -42,4 +42,4 @@ chạy được khi cài riêng; khi sửa script, sửa mọi bản.
 
 ---
 
-<sub>📅 **Cập nhật lần cuối:** 2026-11-01 · ✍️ **Tác giả (Author):** GP247</sub>
+<sub>📅 **Cập nhật lần cuối:** 2026-11-17 · ✍️ **Tác giả (Author):** GP247</sub>

@@ -236,7 +236,13 @@ deleted and replaced on update); and `AppConfig::update(?string $fromVersion)` i
 after files changed by `git pull` / composer / manual copy (`gp247:update`, `gp247:ext-update --local`, the
 admin "Apply" button) — once with `$fromVersion = null` on a site that has no recorded version. So
 `update()` must add any setting row, menu entry or column a release introduced, checking the current state
-rather than trusting the version number.
+rather than trusting the version number. A plugin that attaches to **another** plugin (a Pro unlocking a free
+edition, an add-on, a listener of another plugin's event) must not read that plugin's constants or call its
+static methods in `Provider.php` at boot — it loads the class, and PHP then keeps the old code when that plugin
+is updated, so its old `update()` can run. Write shared event names / config keys as strings (`::class` is
+fine), call the other plugin's classes only inside closures, and add a test that the strings equal its
+constants. gp247/core 3.14.3+ also defers the hook to a fresh request in that case, but sites on older cores
+rely on this rule.
 
 **Secret settings must be encrypted at rest** (if `capabilities.secret_cast`; details in
 `references/file-templates.md` §6). Whenever a setting holds a **credential** — API key, access token,
@@ -321,6 +327,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 | `update()` that returns early on `$fromVersion === null` | Core calls it with `null` after git/composer updates on sites with no recorded version; the new rows/columns never arrive. Guard on the current state instead. |
 | Provisioning tables with Laravel **migration files** without cleaning the ledger on uninstall | Reinstall runs nothing and the table stays missing → `42S02` fatal. Prefer `Schema` in `ExtensionModel`; see §2 of the references. |
 | Shipping a file under `app/GP247/Templates/...` to show a storefront block | Ties the plugin to one template and is left behind on removal. Register a layout block or a plugin hook (step 7). |
+| `Provider.php` reading another plugin's constant at boot (`\App\GP247\Plugins\Other\AppConfig::SOME_EVENT`) | Loads that plugin's class before it is updated; its **old** `update()` then runs after the new files are copied (MultiVendor 1.1.4 → 1.1.5 failed this way next to MultiVendorPro). Use the string value, `::class`, or call it inside a closure (update-safety invariants above). |
 | Storing uploads inside the plugin folder | The folder is deleted and replaced on update. Store user files under a shared `public/GP247/…` area or `storage/`. |
 | Guessing the business logic | Out of scope and likely wrong. Ask the four Input questions when the spec is unclear. |
 | Forgetting `php artisan optimize:clear` | Admin shows stale routes/views/config — the #1 support issue after building. |
@@ -348,7 +355,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-13` |
+| Lần cuối cập nhật / Last updated | `2026-11-17` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |

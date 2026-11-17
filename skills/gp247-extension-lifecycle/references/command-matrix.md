@@ -17,8 +17,8 @@ Commands that act on extensions take `--type=plugin|template` (default `plugin`)
 | `gp247:ext-enable` | `--type`, `--key=*` | Enable **installed** extensions. | ≠ 0 if any item failed (`enable_failed`) |
 | `gp247:ext-disable` | `--type`, `--key=*` | Disable installed extensions. Refused for a template in use / the default template. | ≠ 0 if any item failed (`disable_failed`) |
 | `gp247:ext-uninstall` | `--type`, `--key=*`, `--only-data`, `--purge` | See the uninstall matrix. | ≠ 0 if any item failed (`uninstall_failed`) |
-| `gp247:ext-update` | `--type`, `--key=` (one), `--all` | **Library update**: download the newer release, back up, replace the folders, run the data hook; restore the backup if it fails. | ≠ 0 **only if every item failed** (`update_failed`); partial failures are in `data.failed` with exit 0 |
-| `gp247:ext-update --local` | `--type`, `--key=` (one) or `--all`, `--dry-run` | If `capabilities.ext_update_local`. **No download.** For installed extensions whose `gp247.json` version is newer than the version core recorded, run `AppConfig::update($recordedVersion)` and record the new version on success. `data`: `applied`, `pending` (dry run), `skipped`, `failed`. | ≠ 0 if **any** hook failed (`local_update_failed`) — the site runs new files on old data |
+| `gp247:ext-update` | `--type`, `--key=` (one), `--all` | **Library update**: download the newer release, back up, replace the folders, run the data hook; restore the backup if it fails. From gp247/core 3.14.3, if the extension's code was already loaded in the process, the hook runs in a child `ext-update --local` process (same restore on failure). | ≠ 0 **only if every item failed** (`update_failed`); partial failures are in `data.failed` with exit 0 |
+| `gp247:ext-update --local` | `--type`, `--key=` (one) or `--all`, `--dry-run` | If `capabilities.ext_update_local`. **No download.** For installed extensions whose `gp247.json` version is newer than the version core recorded, run `AppConfig::update($recordedVersion)` and record the new version on success. From gp247/core 3.14.3: copies the extension's `public/` first (copy fails ⇒ no hook, item failed), and finishes a library update left pending (restores its backup if the hook fails). `data`: `applied`, `pending` (dry run), `skipped`, `failed`. | ≠ 0 if **any** hook failed (`local_update_failed`) — the site runs new files on old data |
 | `gp247:ext-check-update` | `--type`, `--force` | Report available library updates. Cached unless `--force`. | 0 |
 | `gp247:ext-search` | `--type`, `--keyword=`, `--free`, `--page=` | Browse the library catalog. | 0 — an unreachable library gives an empty list plus a `warnings` entry; check it |
 | `gp247:ext-register-license` | none | Register the domain in `APP_URL` for the site's free **API License** and write `GP247_API_LICENSE` to `.env` (same as the admin "Click here"). | ≠ 0 on `register_failed` / `env_write_failed` |
@@ -27,7 +27,7 @@ Commands that act on extensions take `--type=plugin|template` (default `plugin`)
 
 Related, not extension-scoped: `gp247:update` (platform update; also runs `ext-update --local --all` for
 plugins then templates — a failed hook is a **warning** with exit 0, details in `data.extension_data`),
-`gp247:doctor` (checks include `extension_assets` and `extension_data_pending`), `gp247:info`,
+`gp247:doctor` (checks include `extension_assets` — missing files, and from gp247/core 3.14.3 outdated files — and `extension_data_pending`), `gp247:info`,
 `gp247:cache-rebuild`.
 
 ## Install source decision (`ext-install`)
@@ -76,6 +76,11 @@ data hook fails, the backup is restored. The backup is not a version-control sub
 library update on a working copy — `git pull` + `ext-update --local` instead. If it happened by mistake,
 stop and tell the user where the backup is before touching anything else.
 
+From gp247/core 3.14.3, when the extension's code was already loaded in the request or process doing the update,
+the files are replaced but the data hook is left to a fresh one (a `pending-update.json` marker next to the
+backups): the admin page sends a second request, the CLI starts a child `ext-update --local` process. Until it
+runs, the extension shows as pending; any `--local` run finishes it and restores the backup if the hook fails.
+
 ## Batch semantics (multiple items)
 
 `ext-install`, `ext-enable`, `ext-disable`, `ext-uninstall` and `ext-publish` accept multiple keys —
@@ -104,6 +109,7 @@ repeat the flag (`--key=A --key=B`) or comma-separate (`--key=A,B`); `ext-instal
 | `install_failed` / `enable_failed` / `disable_failed` / `uninstall_failed` / `publish_failed` | At least one item failed | Read `data.failed`; see the message table below. |
 | `update_failed` | Every library update failed | Read `data.failed`. |
 | `local_update_failed` | At least one data hook failed; the update stays pending | Fix the cause the message names, re-run `ext-update --local --key=<K>`. |
+| `data_update_pending` | (gp247/core 3.14.3+) Library update replaced the files but could not start the child process for the data hook | Run the command the message names (`php artisan gp247:ext-update --local --type=<t> --key=<K>`), or "Apply data update" in the admin. |
 | `register_failed` / `env_write_failed` | API License registration failed / `.env` not writable | For `env_write_failed`, paste the printed `GP247_API_LICENSE=…` into `.env` yourself; keep it secret. |
 
 Common **per-item messages** (wording varies by version and language):
