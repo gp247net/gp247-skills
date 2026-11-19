@@ -17,7 +17,9 @@
 | [gp247-payment-plugin-create](./skills/gp247-payment-plugin-create/SKILL.md) | gp247/shop のお金の約束に沿った決済プラグインを構築します：チェックアウトからの引き継ぎ、注文の支払台帳（入金を一度だけ記録）、署名を検証する Webhook、オプションで支払リンクと返金。 | 2026-10-18 |
 | [gp247-shipping-plugin-create](./skills/gp247-shipping-plugin-create/SKILL.md) | gp247/shop の配送の約束に沿った配送プラグインを構築します：配送会社のサービスごとの見積もり、オプションで送り状の作成、ラベル印刷、追跡、Webhook、代金引換（COD）。 | 2026-10-18 |
 | [gp247-template-create](./skills/gp247-template-create/SKILL.md) | GP247 のテンプレート（ストアフロントのデザイン）を新しく組み立てて構築します。更新にも安全です。 | 2026-10-18 |
-| [gp247-extension-lifecycle](./skills/gp247-extension-lifecycle/SKILL.md) | 既存の GP247 プラグインとテンプレートを CLI（`gp247:ext-*`）でインストール、有効化／無効化、アップグレード、データ更新の適用、アンインストールします。 | 2026-11-17 |
+| [gp247-extension-lifecycle](./skills/gp247-extension-lifecycle/SKILL.md) | 既存の GP247 プラグインとテンプレートを CLI（`gp247:ext-*`）でインストール、有効化／無効化、アップグレード、データ更新の適用、アンインストールします。 | 2026-11-19 |
+| [gp247-plugin-update](./skills/gp247-plugin-update/SKILL.md) | インストール済みプラグインを新しいリリースに更新します：ライブラリで最新バージョンを確認し、無料または有料（ライセンス）プラグインのオンライン更新、または旧版に上書きコピー済みの新しいファイルの適用（データ更新と `public/` のファイル）を行い、拒否やエラーごとに原因と次の手順を示します。 | 2026-11-19 |
+| [gp247-template-update](./skills/gp247-template-update/SKILL.md) | インストール済みのストアフロントテンプレートを新しいリリースに更新します：ライブラリで最新バージョンを確認し、使用中のストアと、更新で消えるファイルへの直接の変更を調べ、無料または有料テンプレートのオンライン更新、または旧版に上書きコピー済みの新しいファイルの適用を行います。`GP247Front` はパッケージの更新と `template-prune` で扱います。 | 2026-11-19 |
 
 ## スキルは core のバージョンを自動で判別します
 
@@ -42,4 +44,4 @@ php <skill-dir>/scripts/gp247-probe.php
 
 ---
 
-<sub>📅 **最終更新:** 2026-11-17 · ✍️ **作成者 (Author):** GP247</sub>
+<sub>📅 **最終更新:** 2026-11-19 · ✍️ **作成者 (Author):** GP247</sub>

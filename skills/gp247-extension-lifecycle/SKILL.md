@@ -1,6 +1,6 @@
 ---
 name: gp247-extension-lifecycle
-description: Installs, enables, disables, upgrades, and uninstalls existing GP247 / S-Cart extensions — both plugins and templates — from the command line using the `gp247:ext-*` command family, and reports each result. It probes the installation first and uses only the commands and options the site's gp247/core actually has. Always use this skill when the user wants to manage the lifecycle of an already-built extension — install a plugin from a `.zip`, an extracted folder, or a marketplace key; enable or disable it; update one or all to a new release; apply the data update after files were changed by git or composer; re-publish its static files; uninstall or purge it; register the site's API license to connect the GP247 library; set a paid license; or list / check what is installed and what has updates — for example "cài plugin News", "gỡ plugin X", "nâng cấp tất cả extension", "bật/tắt template", "cập nhật license plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese, so do not wait for an exact English keyword match. Do not use this skill to CREATE or scaffold a NEW plugin (use gp247-plugin-create) or a new template (use gp247-template-create), or to update the GP247 platform packages (core/front/shop) themselves after `composer update` — that is `gp247:update`, documented in gp247-docs `install-upgrade/update`.
+description: Installs, enables, disables, upgrades, and uninstalls existing GP247 / S-Cart extensions — both plugins and templates — from the command line using the `gp247:ext-*` command family, and reports each result. It probes the installation first and uses only the commands and options the site's gp247/core actually has. Always use this skill when the user wants to manage the lifecycle of an already-built extension — install a plugin from a `.zip`, an extracted folder, or a marketplace key; enable or disable it; update one or all to a new release; apply the data update after files were changed by git or composer; re-publish its static files; uninstall or purge it; register the site's API license to connect the GP247 library; set a paid license; or list / check what is installed and what has updates — for example "cài plugin News", "gỡ plugin X", "bật/tắt template", "cập nhật license plugin". Trigger on Vietnamese, Japanese, or English phrasing of this intent — the team usually writes in Vietnamese, so do not wait for an exact English keyword match. Do not use this skill to update an installed plugin or template to a newer release (use gp247-plugin-update / gp247-template-update), to CREATE or scaffold a NEW plugin (use gp247-plugin-create) or a new template (use gp247-template-create), or to update the GP247 platform packages (core/front/shop) themselves after `composer update` — that is `gp247:update`, documented in gp247-docs `install-upgrade/update`.
 ---
 
 # gp247-extension-lifecycle — Install, upgrade & remove GP247 extensions from the CLI
@@ -32,6 +32,9 @@ command names, option flags, extension keys, or JSON envelope fields.
 - **Creating / scaffolding a NEW plugin** — use `gp247-plugin-create`. This skill only manages extensions
   that already exist as a `.zip`, an on-disk folder, or a marketplace item.
 - **Creating a NEW storefront template** — use `gp247-template-create`.
+- **Updating an installed plugin or template to a newer release** — checking the newest version, the online update of a
+  free or paid plugin, or applying new files copied over the old ones — use `gp247-plugin-update`, which
+  covers each case and its failures in depth. For a template, use `gp247-template-update`.
 - **Updating the GP247 platform itself** (core/front/shop/mcp) after `composer update` — that is
   `gp247:update`, not an extension operation; see `gp247-docs/install-upgrade/update.md`. (It also applies
   pending extension data updates — see step 3.)
@@ -205,7 +208,8 @@ working copy (`.git/`). Run `php artisan gp247:ext-check-update --type=plugin --
 `php artisan gp247:ext-uninstall --type=plugin --key=OldBanner` (removes config **and** folders). If
 `OldBanner` is on disk but not installed, plain uninstall is refused — use `--purge`.
 
-**Example 3 — a developer pulled new plugin code**
+**Example 3 — a developer pulled new plugin code** (a plugin update: `gp247-plugin-update` handles it in
+depth; the core of it is below)
 Input: "Tôi vừa git pull plugin News, cập nhật giúp." → The folder is a working copy, so **not** the
 library update. Probe: `ext_update_local` true. Run
 `php artisan gp247:ext-update --type=plugin --key=News --local --dry-run`, show what would apply, then run
@@ -255,7 +259,7 @@ without echoing `<L>`.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-17` |
+| Lần cuối cập nhật / Last updated | `2026-11-19` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/cli/cli-extensions.md |
