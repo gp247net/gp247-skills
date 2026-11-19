@@ -173,7 +173,8 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    storefront through admin Layout Block, by position. The layout must call
    `{!! gp247_render_block('<position>', $layout_page ?? null) !!}` for **every** position listed in the
    probe's `capabilities.front_layout_positions` — at the time of writing `header` (render it **inside
-   `<head>`**: head code such as analytics), `top`, `left`, `center`, `right`, `bottom`, `footer`; trust
+   `<head>`**: head code that is not tracking — tracking code belongs on the Tracking code & cookies screen, where it
+   waits for cookie consent), `top`, `left`, `center`, `right`, `bottom`, `footer`; trust
    the probe over this list. A position the layout does not render silently drops every block filed under
    it. A block of type "view" named `<x>` resolves to the template's `blocks/<x>` first,
    then to a plugin's block of the same name (if `capabilities.front_layout_block_views`) — so a block
@@ -203,7 +204,20 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    naming its source (`{{-- source: gp247/shop src/Views/templates/GP247Front/screen/shop_cart.blade.php --}}`)
    so whoever maintains the template can diff it after a `gp247/front` / `gp247/shop` update and carry over
    security, SEO and behaviour fixes (escaping, sort options, new Livewire properties). Page table and the
-   checkout caveat in `references/file-templates.md` §6.
+   checkout caveat in `references/file-templates.md` §6. Three pages carry a contract of their own:
+   - `screen/shop_product_detail` — keep the package's `@push('jsonld')` block **as it is** (it builds the product
+     data: SKU, brand, UPC/EAN/JAN, MPN, promotion end date and the product id that rating plugins use, then
+     includes `common/jsonld_product` and `common/jsonld_breadcrumb`); restyle around it, never trim its fields.
+     If the template must also run on a `gp247/shop` older than 3.11.3, guard `promotionValidUntil()` with
+     `method_exists`.
+   - `livewire/shop_product-filter` — keep the Livewire bindings the component expects (`wire:model.live="sort"`,
+     shown in the URL as `filter_sort`; `priceMin` / `priceMax`; `applyPrice`, `clearFilters`, `toggleBrand`) and offer only the sort values of `ShopProduct::storefrontSort()`
+     (empty = Featured, `id_desc`, `sold_desc`, `price_asc`, `price_desc`, `name_asc`); the old
+     `sort_asc` / `sort_desc` are no longer shopper choices. On a `gp247/shop` older than 3.11 (no `storefrontSort()`) keep the
+     old list (`method_exists`).
+   - Sales events (view item, add to cart, begin checkout, purchase) for GA4 / GTM / Meta Pixel are sent by the
+     shop's controllers and Livewire, not by the views: a copied page needs nothing for them, but keep adding to
+     the cart through the shop's own button / Livewire action instead of a hand-made form or `fetch`.
 
 9. **Verify.** Run `php artisan optimize:clear`, then:
    - **Install** — with the user's OK (it writes the DB), install in place (the folder is on disk:
@@ -344,7 +358,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-19` |
+| Lần cuối cập nhật / Last updated | `2026-11-20` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |
