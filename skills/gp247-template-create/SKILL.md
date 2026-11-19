@@ -157,6 +157,18 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    and breaks on an older `gp247/front` whose builder does not have the new arguments. Ship no default share image: the page image, else the store's
    `og_image`, else no `og:image` tag.
 
+   **Tracking code and the cookie banner come through the same component.** `meta-head` also prints the site
+   owner's tracking code (GA4, GTM, Meta Pixel, custom code) in dormant form, the consent loader and the cookie
+   banner — a layout without `<x-gp247-front::meta-head>` gets none of them, and the admin warns about it. Two
+   optional touches: (1) put an element with `data-gp247-consent-open` in the footer (a link or button with the
+   `hidden` attribute and the text `gp247_language_render('front.consent.settings')`); the loader shows it when the
+   banner is on and opens the cookie settings — without one the loader adds a small floating button; wrap it in
+   `@if (class_exists(\GP247\Front\TemplateComponents\ConsentBanner::class))` so the template still runs on an
+   older `gp247/front`. (2) Restyle the banner only if the user asks, by overriding
+   `gp247_components/consent-banner.blade.php`: keep every `data-gp247-consent-*` hook (banner, panel, the
+   `analytics` / `marketing` checkboxes, save, close) and keep **Accept all / Reject / Customise** as three buttons
+   of the same size and style — refusing must be as easy as accepting.
+
 5. **Layout blocks.** The site owner places content (banners, product grids, HTML, plugin blocks) into the
    storefront through admin Layout Block, by position. The layout must call
    `{!! gp247_render_block('<position>', $layout_page ?? null) !!}` for **every** position listed in the
@@ -250,6 +262,7 @@ Created template <Name> (update-safe) on gp247/core <probe.core>:
 - [x] gp247.json → configKey <Name>, requireCore <probe.require_core>, requireComposerPackages [<list>], version 1.0
 - [x] Required views: layout, screen/{home,page_detail,front_search,notfound,404}, common/{item_single,pagination} (+ <the four shop partials / none — no shop>)
 - [x] SEO head: <x-gp247-front::meta-head> + @stack('jsonld') behind the JSON-LD switch; no hand-written meta tags, no bundled og:image
+- [ ] Cookie settings link: <footer element with data-gp247-consent-open (hidden) / skipped — the loader's floating button is used>
 - [x] Layout blocks: header (in <head>), top, left, center, right, bottom, footer; default blocks seeded in setupStore()
 - [ ] Settings: <effective/save helpers wired / skipped — no editable settings>
 - [ ] CSS: <built to public/css/app.css / UNVERIFIED — no Node>
@@ -297,6 +310,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 | Bundling a default share image (`og:image`) | Every page then advertises the theme's sample picture instead of the shop. The component already falls back to the store's `og_image`, and leaves the tag out when there is none. |
 | Leaving `@stack('jsonld')` out of `<head>`, or outside the JSON-LD switch | Product/breadcrumb structured data disappears, or ignores the admin switch. Wrap it in `@if(\GP247\Front\Library\SeoMeta::jsonldEnabled())`. |
 | Copied package views with no record of their source | After a front/shop update nobody knows which files to diff, so escaping and behaviour fixes never reach the theme. Add the `source:` comment (step 8) and re-diff on every update. |
+| Overriding `consent-banner` without all `data-gp247-consent-*` hooks, or with a smaller / hidden Reject button | The banner stops working (buttons do nothing) or asks unfairly; keep every hook and three equal buttons, or leave the package banner in place. |
 | Rendering only some layout-block positions, or `header` outside `<head>` | Blocks filed under a missing position never appear; head-code blocks (analytics, verification tags) belong in `<head>`. |
 | Tailwind `content` globs that cover only the template folder | Shop fallback pages render with their own classes, which then have no CSS. Include the package views; define the colour tokens they use. |
 | Forgetting `requireComposerPackages: ["gp247/front"]` | A template only runs with the storefront present. |
@@ -330,7 +344,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-17` |
+| Lần cuối cập nhật / Last updated | `2026-11-19` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |
