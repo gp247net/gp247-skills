@@ -150,6 +150,8 @@ try {
         'shop_order_record_payment'  => method_exists('GP247\\Shop\\Models\\ShopOrder', 'recordPayment'),
         'shop_price_resolvers'       => class_exists($shopProduct)
             && strpos((string) file_get_contents((new ReflectionClass($shopProduct))->getFileName()), 'price_resolvers') !== false,
+        // Admin "Duplicate" product button: plugins copy their own product rows via gp247-config.shop.product_duplicators.
+        'shop_product_duplicators'   => class_exists('GP247\\Shop\\Services\\Catalog\\ProductDuplicator'),
         'shop_payment_refund_sources' => interface_exists('GP247\\Shop\\Payment\\Contracts\\ProvidesRefundSources'),
         // Payment plugins whose orders are paid in cash on delivery (the shipment collects the balance).
         'shop_cod_payment_methods'   => is_array(config('gp247-config.shop.cod_payment_methods')),

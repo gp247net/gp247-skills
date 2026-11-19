@@ -477,3 +477,41 @@ public static function productBottom(array $data): string
 **Own page in the "Page" scope of layout blocks** — uncomment the `layout_page` registration the scaffold
 leaves in `Provider.php` and store the language **key**, not a rendered string (the `News` plugin is the
 reference).
+
+## 9. Product duplicator (if `capabilities.shop_product_duplicators`)
+
+The admin Product screen has a **Duplicate** button: the shop copies its own parts (texts, prices,
+variants, images, categories, tags, custom fields, SEO…) into a new product that is switched off with
+stock 0, in one transaction. Rows of **your** tables tied to the product are not copied unless you say
+so. Register from `Provider.php`:
+
+```php
+$duplicators = config('gp247-config.shop.product_duplicators', []);
+$duplicators[] = [
+    'key' => '<Name>',
+    // An array callable, never a closure: config values must survive `php artisan config:cache`.
+    'callback' => [\App\GP247\Plugins\<Name>\ProductDuplicator::class, 'copy'],
+];
+config(['gp247-config.shop.product_duplicators' => $duplicators]);
+```
+
+```php
+// ProductDuplicator.php — runs after the shop copied its own parts, inside the same transaction.
+public static function copy(
+    \GP247\Shop\Models\ShopProduct $source,
+    \GP247\Shop\Models\ShopProduct $copy,
+    \GP247\Shop\Services\Catalog\WriteContext $ctx
+): void {
+    // Copy what belongs to the product's content (e.g. a vendor link); skip what belongs to the
+    // original's history (reviews, sales counters, running promotions) — the copy is a new product.
+    foreach (PluginRow::where('product_id', $source->id)->get() as $row) {
+        PluginRow::create(['product_id' => $copy->id] + $row->only(['vendor_id', 'note']));
+    }
+}
+```
+
+- Doing nothing is a valid choice: a plugin that does not register keeps its rows on the original only.
+- **Do not catch and hide errors.** An exception cancels the whole duplicate and the admin sees
+  "the plugin `<Name>` failed" — better than a copy that silently lacks your data.
+- Write through your own models / query builder on the shop connection; do not open a separate
+  connection (it would escape the transaction).

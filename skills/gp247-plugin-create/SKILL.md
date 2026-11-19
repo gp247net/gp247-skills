@@ -127,6 +127,9 @@ what step 0 found.
    `uninstallExtension()`. **Prefer this direct-`Schema` pattern — it is re-entrant** (install recreates
    the table every time). Laravel migration files carry a ledger trap on reinstall; read the callout in
    `references/file-templates.md` §2 before choosing them.
+   If a row of the table belongs to a product (a vendor, a rating, a sale price…) and
+   `capabilities.shop_product_duplicators`, register a product duplicator so the admin **Duplicate** button
+   copies — or deliberately skips — the plugin's rows for the copy: `references/file-templates.md` §9.
 
 5. **(If it has site-owner-editable settings) wire update-safe settings — the core rule.** A release
    overwrites `config.php`, so that file holds **defaults only**; every editable value lives in
@@ -355,7 +358,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-17` |
+| Lần cuối cập nhật / Last updated | `2026-11-19` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |
