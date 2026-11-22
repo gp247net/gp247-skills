@@ -97,8 +97,9 @@ the shop fills on the site with
 
 - `meta-head` prints charset/viewport, title, description, keywords, canonical, favicon, Open Graph, Twitter
   card, CSRF token, hreflang and the Organization JSON-LD. Controllers pass `$title`, `$description`,
-  `$keyword`, `$og_image` per page; the component falls back to the store values (an empty description or
-  keyword counts as missing), and leaves `og:image` out when neither the page nor the store has an image.
+  `$keyword`, `$og_image` per page; the title falls back to the store name, an empty description or keyword
+  prints no tag (never the store's values), and `og:image` is left out when neither the page nor
+  the store has an image. An override of `meta-head` must wrap each description/keywords tag in `@if(!empty(...))`.
   It also decides, from the current route, what a layout never passes (gp247/front 3.10+): `meta robots`
   (`noindex, follow` on cart/checkout/account/search and filtered listings), the canonical (keeps `?page=N`),
   `og:url` (= canonical), hreflang + `x-default` when the URL has a language prefix, `og:type` (from the

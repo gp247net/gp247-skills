@@ -358,7 +358,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-20` |
+| Lần cuối cập nhật / Last updated | `2026-11-22` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |
