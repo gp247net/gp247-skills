@@ -16,7 +16,7 @@ Commands that act on extensions take `--type=plugin|template` (default `plugin`)
 | `gp247:ext-install` | `--type`, `--file=*`, `--dir=*`, `--key=*`, `--paid`, `--license=` | Install from `.zip`, extracted folder, or key. See the source decision below. | ≠ 0 if **any** item failed (`install_failed`) |
 | `gp247:ext-enable` | `--type`, `--key=*` | Enable **installed** extensions. | ≠ 0 if any item failed (`enable_failed`) |
 | `gp247:ext-disable` | `--type`, `--key=*` | Disable installed extensions. Refused for a template in use / the default template. | ≠ 0 if any item failed (`disable_failed`) |
-| `gp247:ext-uninstall` | `--type`, `--key=*`, `--only-data`, `--purge`, `--forget` (core 3.19.0+) | See the uninstall matrix. | ≠ 0 if any item failed (`uninstall_failed`) |
+| `gp247:ext-uninstall` | `--type`, `--key=*`, `--only-data`, `--purge`, `--forget` (core 3.18.2+) | See the uninstall matrix. | ≠ 0 if any item failed (`uninstall_failed`) |
 | `gp247:ext-update` | `--type`, `--key=` (one), `--all` | **Library update**: download the newer release, back up, replace the folders, run the data hook; restore the backup if it fails. From gp247/core 3.14.3, if the extension's code was already loaded in the process, the hook runs in a child `ext-update --local` process (same restore on failure). | ≠ 0 **only if every item failed** (`update_failed`); partial failures are in `data.failed` with exit 0 |
 | `gp247:ext-update --local` | `--type`, `--key=` (one) or `--all`, `--dry-run` | If `capabilities.ext_update_local`. **No download.** For installed extensions whose `gp247.json` version is newer than the version core recorded, run `AppConfig::update($recordedVersion)` and record the new version on success. From gp247/core 3.14.3: copies the extension's `public/` first (copy fails ⇒ no hook, item failed), and finishes a library update left pending (restores its backup if the hook fails). `data`: `applied`, `pending` (dry run), `skipped`, `failed`. | ≠ 0 if **any** hook failed (`local_update_failed`) — the site runs new files on old data |
 | `gp247:ext-check-update` | `--type`, `--force` | Report available library updates. Cached unless `--force`. | 0 |
@@ -62,7 +62,7 @@ enables the config row, and `gp247:template-setup` only applies the default temp
 | **On disk but not installed** | **Refused** (nothing in DB to remove) | **Refused** | Deletes the folders only |
 | **Orphan** — installed, folder missing | **Refused** `orphan_source_missing` (no `uninstall()` to run) | **Refused** (same) | **Refused** (same) |
 
-`--forget` (gp247/core 3.19.0+) is for the orphan row only: it removes core's registration records (flag rows of every
+`--forget` (gp247/core 3.18.2+) is for the orphan row only: it removes core's registration records (flag rows of every
 store, recorded version, dashboard block) and keeps the extension's own tables and settings; it refuses an extension that
 still has its source (`not_orphan_use_uninstall`), and cannot be combined with `--only-data` / `--purge`.
 
