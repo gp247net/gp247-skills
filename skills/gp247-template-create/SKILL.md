@@ -204,7 +204,17 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
    naming its source (`{{-- source: gp247/shop src/Views/templates/GP247Front/screen/shop_cart.blade.php --}}`)
    so whoever maintains the template can diff it after a `gp247/front` / `gp247/shop` update and carry over
    security, SEO and behaviour fixes (escaping, sort options, new Livewire properties). Page table and the
-   checkout caveat in `references/file-templates.md` §6. Three pages carry a contract of their own:
+   checkout caveat in `references/file-templates.md` §6. These pages carry a contract of their own:
+   - **Address forms** — `auth/shop_register`, `account/shop_change_infomation`, `account/shop_update_address`,
+     `livewire/shop_checkout-wizard`: never write the country / postcode / city / district / ward / address1–3 inputs by
+     hand. Include the shop's shared address block (`common/shop_address_fields`) exactly as the default page does —
+     same `AddressBlock::for(...)` arguments and `testidPrefix` — and restyle it through its class parameters
+     (`inputClass`, `labelClass`, `errorClass`, `wrapperClass`…). The block shows the fields the shop switched on, in the
+     right order, and turns them into searchable, dependent lists when an address plugin serves the country (a typed
+     address field cannot do that). Fields outside the block (company, sex, birthday…) stay in the page. If the template
+     must also run on a `gp247/shop` without the block, wrap it in `@if (class_exists(\GP247\Shop\Address\View\AddressBlock::class))`
+     and keep the typed fields in `@else`. Do not copy `common/shop_address_fields` itself unless you must change its
+     markup — a copy stops receiving the block's fixes.
    - `screen/shop_product_detail` — keep the package's `@push('jsonld')` block **as it is** (it builds the product
      data: SKU, brand, UPC/EAN/JAN, MPN, promotion end date and the product id that rating plugins use, then
      includes `common/jsonld_product` and `common/jsonld_breadcrumb`); restyle around it, never trim its fields.
@@ -358,7 +368,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-22` |
+| Lần cuối cập nhật / Last updated | `2026-11-24` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |

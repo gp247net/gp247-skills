@@ -332,6 +332,28 @@ The shop package has more overridable folders — `account/`, `auth/`, `blocks/`
 includes those by the shop's own namespace (`gp247-shop-front::partials.*`), so a copy in the template is
 never used.
 
+**Address forms.** The four pages with an address form (`auth/shop_register`,
+`account/shop_change_infomation`, `account/shop_update_address`, `livewire/shop_checkout-wizard`) print the address
+fields through one shared block. In a copied page keep the include as the default page has it and pass your classes:
+
+```blade
+@include(gp247_shop_process_view($GP247TemplatePath, 'common.shop_address_fields'), [
+    'addressBlock' => \GP247\Shop\Address\View\AddressBlock::for(
+        old('country', $address['country']),
+        \GP247\Shop\Address\AddressForm::CONTEXT_ADDRESS_BOOK,
+        values: $address->only(['city', 'district', 'ward', 'address1', 'address2', 'address3', 'country', 'postcode']),
+        meta: $address->address_meta,
+    ),
+    'testidPrefix' => 'account-address',
+    'countries' => $countries,
+    'errorClass' => 'text-xs text-red-600 mt-1',   // your error colour; also inputClass, labelClass, wrapperClass…
+])
+```
+
+The block brings its own small stylesheet for the searchable lists (`.gp247-addr-*`); restyle them from your CSS if
+needed. Its other classes are plain Tailwind utilities plus the form classes your template already defines (`label`,
+`input`, `input-error`, `btn-outline`, `btn-sm`) — check they are in your build.
+
 **Checkout and total-methods.** Coupon/points plugins render inside the shop's checkout through two
 includes. Prefer **not** overriding the checkout. If you do override
 `livewire/shop_checkout-wizard.blade.php`, keep at the confirm step:
