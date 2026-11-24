@@ -144,6 +144,7 @@ text, and check the **exit code** on every run (its meaning per command is in th
    | Apply data update (files changed by `git pull` / composer / copy) | `gp247:ext-update --type=<t> --key=<K> --local` / `--all` (`--dry-run` to preview) | If `capabilities.ext_update_local`. Downloads nothing; runs the extension's `AppConfig::update()` when its `gp247.json` version is newer than the version core recorded. From gp247/core 3.14.3 it first copies the extension's `public/` to `public/GP247/...` (copy fails ⇒ the hook does not run, item failed) and finishes a library update left pending. Admin equivalent: "Apply data update" on the extension list. |
    | Uninstall | `gp247:ext-uninstall --type=<t> --key=<K>` | Runs the extension's `uninstall()`, removes its config **and deletes its folders**. `--only-data` keeps the folders. |
    | Purge on-disk-only | `gp247:ext-uninstall --type=<t> --key=<K> --purge` | For a not-installed-but-on-disk item; deletes the folders. |
+   | Forget an orphan (installed, source missing) | `gp247:ext-uninstall --type=<t> --key=<K> --forget` | If the option exists (gp247/core 3.19.0+). For an extension whose `admin_config` row exists but whose folder is gone (site moved without it). Removes only core's registration records (flag rows of every store, recorded version, dashboard block); the extension's own tables and settings stay. Admin equivalent: "Forget" on the orphan row of the Plugins / Templates list. When the owner still needs the extension, bring its source instead (same or newer version) and run `ext-update --local`. |
    | License | `gp247:ext-license --type=<t> --key=<K> [--license=<L>] [--delete]` | Set / show / remove a paid license. |
    | Re-publish static files | `gp247:ext-publish --type=<t> --key=<K>` / `--all` | If the command exists. Copies an installed extension's `public/` to `public/GP247/...` again. The repair for `gp247:doctor` → `extension_assets` (missing files; from gp247/core 3.14.3 also outdated files). On core older than 3.14.3, run it after `ext-update --local` when the files were replaced by hand — that core's `--local` does not copy `public/`. |
 
@@ -175,7 +176,8 @@ text, and check the **exit code** on every run (its meaning per command is in th
 - **Guards apply from CLI exactly as in admin:** a template that is in use or is the default cannot be
   disabled or removed; an extension listed in `GP247_PROTECTED_PLUGINS` / `GP247_PROTECTED_TEMPLATES`
   cannot be uninstalled (disabling it is still allowed).
-- **`--only-data` and `--purge` are mutually exclusive** on `ext-uninstall` (`conflicting_options`).
+- **`--only-data` and `--purge` are mutually exclusive** on `ext-uninstall` (`conflicting_options`); `--forget`
+  cannot be combined with either.
 
 ## Output format
 
@@ -238,6 +240,8 @@ without echoing `<L>`.
 | Treating `data_update_pending` as done | The files are replaced but the data hook has not run (no child process allowed). Run the `--local` command the message names, or the admin "Apply data update" button. |
 | Assuming `--only-data` leaves the extension's tables | It runs the extension's own `uninstall()`, which may drop its tables. Only the folders are kept. |
 | Combining `--only-data` and `--purge` | Refused (`conflicting_options`). |
+| Plain `ext-uninstall` on an orphan (installed, source missing) | Refused with `orphan_source_missing` — there is no `uninstall()` to run. Ask the owner: still needed ⇒ copy the source (same or newer version) and `ext-update --local`; not needed ⇒ `--forget` (core 3.19.0+). Never recreate a fake folder to make the plain uninstall run. |
+| Copying a much newer release over old data | `ext-update --local` skips it (core 3.19.0+) when the data is older than the manifest's `minUpdateFrom`; the message names that version — install it (or one between) first. |
 | `--paid` with several `--key` values | Refused (`paid_multi_not_allowed`). Install paid items one key at a time. |
 | Forgetting `--type=template` for templates | Defaults to `plugin`; the template key is then not found. |
 | Downloading by `--key` before the site has an API License | Fails with a library error plus a hint. Run `gp247:ext-register-license` once, then retry. |
@@ -259,7 +263,7 @@ without echoing `<L>`.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-19` |
+| Lần cuối cập nhật / Last updated | `2026-11-24` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/cli/cli-extensions.md |
