@@ -200,6 +200,7 @@ what the carrier offers; webhook secret generated on install and shown as part o
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
+| Keeping receivers' names, phones or addresses in a table of the plugin without declaring it | The customer's erasure leaves the address behind. Prefer the shop's shipment record (declared by the shop); a table of your own is declared as personal data (`references/personal-data.md`) with a retention item for logs. |
 | Running API tokens, secrets, webhook payloads or tracking codes through `gp247_clean()` or another cleaning function | Encoding turns `&` into `&amp;`: the provider rejects the key or the signature no longer matches. Store them exactly as received (secrets encrypted); clean only the text a person types with `gp247_text_plain()` and print with `{ }`. |
 | A settings screen that does not say what is still missing | The owner enables the plugin, nothing happens, and they must hunt for the cause on other screens. Implement `readiness()` with every local condition the plugin needs, each with the reason and a link to where to fix it (`references/file-templates.md` §3A). |
 | Converting the carrier price to the display currency in the plugin | The shop converts carrier → base → display once; a second conversion doubles it. Return `Money` in the carrier's currency. |
@@ -218,6 +219,8 @@ what the carrier offers; webhook secret generated on install and shown as part o
 
 ## Bundled resources
 
+- `references/personal-data.md` — only when the plugin keeps customer data in a table of its own: declaring it
+  as personal data (code or `gp247.json`), column rules, retention items.
 - `scripts/gp247-probe.php` — step 0. Read-only; one JSON object (core version, `require_core`, usable
   packages, `gp247:*` commands, capabilities). Identical copies ship with every gp247-* skill.
 - `references/shipping-contract.md` — steps 5–8 and 10: registry, value objects, rules, optional
@@ -231,7 +234,7 @@ what the carrier offers; webhook secret generated on install and shown as part o
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-13` |
+| Lần cuối cập nhật / Last updated | `2026-11-25` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 shop repo | https://github.com/gp247net/shop |
 | source | https://github.com/gp247net/shop/tree/master/src/Shipping |

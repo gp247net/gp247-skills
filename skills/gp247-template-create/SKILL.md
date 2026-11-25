@@ -225,6 +225,17 @@ Do the steps in order. Steps 0–5, 7 and 9 always run. Steps 6 and 8 depend on 
      (empty = Featured, `id_desc`, `sold_desc`, `price_asc`, `price_desc`, `name_asc`); the old
      `sort_asc` / `sort_desc` are no longer shopper choices. On a `gp247/shop` older than 3.11 (no `storefrontSort()`) keep the
      old list (`method_exists`).
+   - **Account area and personal data** — the customer's own data pages. If the template copies
+     `account/shop_nav_customer`, keep the "My data" link (route `customer.privacy`, test id `customer-privacy-nav`);
+     if it copies `account/shop_layout`, keep the notice shown above the content while the account waits to be
+     deleted (`gp247_shop_privacy_pending_erasure()`, test id `customer-privacy-delete-banner`, with its call-off
+     form). Without them customers cannot reach the page or call the deletion off. The pages themselves —
+     `account/shop_privacy` (download my data, delete my account), `screen/shop_privacy_request` (shoppers without
+     an account) and the email `email/shop_privacy_notice` — fall back to the shop's copies; copy them only to
+     restyle, keeping every form, its fields, the progress script and the test ids. If the template must also run
+     on a platform without these pages, wrap the link in `@if (\Illuminate\Support\Facades\Route::has('customer.privacy'))`
+     and the notice in `function_exists('gp247_shop_privacy_pending_erasure')`. Details in
+     `references/file-templates.md` §6.
    - Sales events (view item, add to cart, begin checkout, purchase) for GA4 / GTM / Meta Pixel are sent by the
      shop's controllers and Livewire, not by the views: a copied page needs nothing for them, but keep adding to
      the cart through the shop's own button / Livewire action instead of a hand-made form or `fetch`.
@@ -368,7 +379,7 @@ installed. Required views with only `common/item_single` and `common/pagination`
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-24` |
+| Lần cuối cập nhật / Last updated | `2026-11-25` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-template.md |

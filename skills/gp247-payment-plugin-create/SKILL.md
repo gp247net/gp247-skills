@@ -201,6 +201,7 @@ with `PaymentRequestService::recordMovement()`, mirror provider-side refunds via
 
 | Mistake | Why it hurts / how to avoid |
 | --- | --- |
+| Logging the gateway's payloads (payer name, email, card holder) in a table of the plugin without declaring it | The customer's erasure leaves the payer behind. Prefer the shop's payment ledger (declared by the shop); a table of your own is declared as personal data (`references/personal-data.md`) with a retention item for logs. |
 | Running API keys, secrets, webhook payloads or gateway references through `gp247_clean()` or another cleaning function | Encoding turns `&` into `&amp;`: the provider rejects the key or the signature no longer matches. Store them exactly as received (secrets encrypted); clean only the text a person types with `gp247_text_plain()` and print with `{ }`. |
 | A settings screen that does not say what is still missing | The owner enables the plugin, nothing happens, and they must hunt for the cause on other screens. Implement `readiness()` with every local condition the plugin needs, each with the reason and a link to where to fix it (`references/file-templates.md` §3A). |
 | `$order->update(['status' => …, 'payment_status' => …, 'received' => …])` | Skips stock, history and events; `received` is derived from the ledger and is overwritten. Use `recordPayment()` + `changeStatus()`. |
@@ -218,6 +219,8 @@ with `PaymentRequestService::recordMovement()`, mirror provider-side refunds via
 
 ## Bundled resources
 
+- `references/personal-data.md` — only when the plugin keeps customer data in a table of its own: declaring it
+  as personal data (code or `gp247.json`), column rules, retention items.
 - `scripts/gp247-probe.php` — step 0. Read-only; one JSON object (core version, `require_core`, usable
   packages, `gp247:*` commands, capabilities). Identical copies ship with every gp247-* skill.
 - `references/payment-contract.md` — steps 5–10: checkout hand-off, ledger, status, webhook, payment
@@ -231,7 +234,7 @@ with `PaymentRequestService::recordMovement()`, mirror provider-side refunds via
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-13` |
+| Lần cuối cập nhật / Last updated | `2026-11-25` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 shop repo | https://github.com/gp247net/shop |
 | source | https://github.com/gp247net/shop/tree/master/src/Payment |

@@ -130,6 +130,10 @@ what step 0 found.
    If a row of the table belongs to a product (a vendor, a rating, a sale price…) and
    `capabilities.shop_product_duplicators`, register a product duplicator so the admin **Duplicate** button
    copies — or deliberately skips — the plugin's rows for the copy: `references/file-templates.md` §9.
+   **If the table holds data about the shop's customers** (a name, an email, a phone, an address, text they
+   wrote), declare it as personal data in `Provider.php`, outside the `gp247_extension_check_active` block (or the `personalData` key of `gp247.json`), so a
+   customer's copy of their data includes it and erasing the customer erases or anonymises it; add a retention
+   item when old rows lose their purpose: `references/personal-data.md`.
 
 5. **(If it has site-owner-editable settings) wire update-safe settings — the core rule.** A release
    overwrites `config.php`, so that file holds **defaults only**; every editable value lives in
@@ -317,6 +321,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 | Copying a `requireCore` value from an example or old plugin | Each entry is a range ending before the next major; a value from another major makes core refuse to install ("not compatible"). Use the probe's `require_core`. |
 | Listing every minor in `requireCore` (`["3.0","3.1"]`) | Redundant — `"3.0"` already covers all of 3.x. One entry per supported major. |
 | Taking the core version from composer | Composer metadata can disagree with `config('gp247.core')`, which is what the compatibility check uses. Use the probe. |
+| Keeping customers' names, emails or messages in a table nobody declared | The customer's erasure leaves them behind and their data copy misses them; the site owner sees the table as "undeclared". Declare it (`references/personal-data.md`). |
 | Letting the site owner edit `config.php` | 1-click update overwrites the file → their choices vanish. Editable values must live in `admin_config` (step 5). |
 | A settings screen that does not say what is still missing | The owner enables the plugin, nothing happens, and they must hunt for the cause on other screens. Implement `readiness()` with every local condition the plugin needs, each with the reason and a link to where to fix it (`references/file-templates.md` §3A). |
 | Seeding a setting only in `config.php` and expecting it on the settings screen | `ConfigForm` shows `admin_config` rows only. Insert the row in `install()` and top it up in `update()`. |
@@ -343,6 +348,8 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 - `scripts/gp247-probe.php` — step 0. Read-only; prints one JSON object (core version, `require_core`,
   usable packages, `gp247:*` commands, capabilities). Identical copies ship with every gp247-* skill.
+- `references/personal-data.md` — read at step 4 when the plugin's table holds customer data: declaring it
+  (code or `gp247.json`), column rules, retention items.
 - `references/file-templates.md` — read at steps 3–7 and for the `update()` hook: `gp247.json` field
   reference, `ExtensionModel` table template and the migration-ledger trap, the two settings models,
   `update()`, the overwrite/preserve map, secrets, admin menu, storefront registries.
@@ -358,7 +365,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 
 | Field | Value |
 | --- | --- |
-| Lần cuối cập nhật / Last updated | `2026-11-19` |
+| Lần cuối cập nhật / Last updated | `2026-11-25` |
 | Skill repo | https://github.com/gp247net/gp247-skills |
 | GP247 core repo | https://github.com/gp247net/core |
 | source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |

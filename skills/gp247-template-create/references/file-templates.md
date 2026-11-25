@@ -354,6 +354,21 @@ The block brings its own small stylesheet for the searchable lists (`.gp247-addr
 needed. Its other classes are plain Tailwind utilities plus the form classes your template already defines (`label`,
 `input`, `input-error`, `btn-outline`, `btn-sm`) — check they are in your build.
 
+**Account area and personal data.** Customers download their data and delete their account from the account area;
+shoppers without an account use a request page. A template that copies these files keeps:
+
+| File in the template | Must keep |
+|---|---|
+| `account/shop_nav_customer.blade.php` | the "My data" link to `gp247_route_front('customer.privacy')` (`data-testid="customer-privacy-nav"`) |
+| `account/shop_layout.blade.php` | above `block_main_profile`: the notice of a pending deletion from `gp247_shop_privacy_pending_erasure()` (`status`, `runs_at`) with a POST form to `customer.privacy_delete_cancel` |
+| `account/shop_privacy.blade.php` | both forms (password, and the two-step code when `$needsCode`), the package status box with its progress script, the download button (POST) |
+| `screen/shop_privacy_request.blade.php` | every `$mode` (`form`, `message`, `package`, `cancel`, `confirm`), the hidden anti-bot field, `$viewCaptcha`, the buttons (POST — mail scanners must change nothing) |
+| `email/shop_privacy_notice.blade.php` | `$title`, `$body`, and the button only when `$url` and `$button` are set — the words are language labels |
+
+On a platform that may not have these pages, guard the link with
+`@if (\Illuminate\Support\Facades\Route::has('customer.privacy'))` and the notice with
+`function_exists('gp247_shop_privacy_pending_erasure')` — a check of what really exists, not of a version number.
+
 **Checkout and total-methods.** Coupon/points plugins render inside the shop's checkout through two
 includes. Prefer **not** overriding the checkout. If you do override
 `livewire/shop_checkout-wizard.blade.php`, keep at the confirm step:
