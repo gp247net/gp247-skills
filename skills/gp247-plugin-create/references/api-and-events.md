@@ -2,8 +2,8 @@
 
 Read this only when the plugin adds **admin REST API endpoints** (for an ERP, CRM or warehouse tool), records
 **sync events** of its own, or **writes shop data** (orders, stock, products, customers) that an ERP should notice.
-Full guide with examples: [How to build an API correctly — section 5.2](https://github.com/gp247net/gp247-docs/blob/main/api/create-api.md)
-(how an application calls these: [GP247 API Introduction](https://github.com/gp247net/gp247-docs/blob/main/api/api-introduction.md),
+Full guide with examples: [How to build an API correctly — section 5.2](https://github.com/gp247-official/gp247-docs/blob/main/api/create-api.md)
+(how an application calls these: [GP247 API Introduction](https://github.com/gp247-official/gp247-docs/blob/main/api/api-introduction.md),
 sections 6 and 7).
 
 **Check the site first.** These pieces exist only when the site's core has them. Confirm before writing code against

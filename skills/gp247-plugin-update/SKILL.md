@@ -285,6 +285,6 @@ again.
 | Field | Value |
 | --- | --- |
 | Lần cuối cập nhật / Last updated | `2026-11-19` |
-| Skill repo | https://github.com/gp247net/gp247-skills |
-| GP247 core repo | https://github.com/gp247net/core |
-| source | https://github.com/gp247net/gp247-docs/blob/main/extension/update-extension.md |
+| Skill repo | https://github.com/gp247-official/gp247-skills |
+| GP247 core repo | https://github.com/gp247-official/core |
+| source | https://github.com/gp247-official/gp247-docs/blob/main/extension/update-extension.md |

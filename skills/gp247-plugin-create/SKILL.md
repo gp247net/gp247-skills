@@ -357,7 +357,7 @@ add the checkout, ledger and carrier contracts this skill does not cover.
   (payment and shipping have their own skills).
 - `references/api-and-events.md` — read only when the plugin adds admin REST API endpoints, sync events,
   or writes shop data: write-endpoint middleware, sync-ready lists, plugin event types, shop events. Full
-  guide: https://github.com/gp247net/gp247-docs/blob/main/api/create-api.md (section 5.2).
+  guide: https://github.com/gp247-official/gp247-docs/blob/main/api/create-api.md (section 5.2).
 
 ---
 
@@ -366,6 +366,6 @@ add the checkout, ledger and carrier contracts this skill does not cover.
 | Field | Value |
 | --- | --- |
 | Lần cuối cập nhật / Last updated | `2026-11-25` |
-| Skill repo | https://github.com/gp247net/gp247-skills |
-| GP247 core repo | https://github.com/gp247net/core |
-| source | https://github.com/gp247net/gp247-docs/blob/main/extension/create-plugin.md |
+| Skill repo | https://github.com/gp247-official/gp247-skills |
+| GP247 core repo | https://github.com/gp247-official/core |
+| source | https://github.com/gp247-official/gp247-docs/blob/main/extension/create-plugin.md |

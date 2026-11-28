@@ -235,6 +235,6 @@ with `PaymentRequestService::recordMovement()`, mirror provider-side refunds via
 | Field | Value |
 | --- | --- |
 | Lần cuối cập nhật / Last updated | `2026-11-25` |
-| Skill repo | https://github.com/gp247net/gp247-skills |
-| GP247 shop repo | https://github.com/gp247net/shop |
-| source | https://github.com/gp247net/shop/tree/master/src/Payment |
+| Skill repo | https://github.com/gp247-official/gp247-skills |
+| GP247 shop repo | https://github.com/gp247-official/shop |
+| source | https://github.com/gp247-official/shop/tree/master/src/Payment |
